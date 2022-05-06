@@ -1,8 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
+import { AuthModule } from './authentication/auth.module';
 import { User } from './models/users/entities/user.entity';
 
 @Module({
@@ -26,10 +25,13 @@ import { User } from './models/users/entities/user.entity';
       autoLoadEntities: true,
       //NOTICE: Disable in production!
       synchronize: true,
-    })
+    }),
 
+
+    //My modules
+    AuthModule,
   ],
-  controllers: [AppController],
-  providers: [AppService],
+  controllers: [],
+  providers: [],
 })
 export class AppModule { }

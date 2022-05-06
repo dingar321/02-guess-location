@@ -1,4 +1,4 @@
-//import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty } from "@nestjs/swagger";
 import { IsEmail, IsNotEmpty, IsString, Length, Matches, MaxLength, maxLength, MinLength, validate, Validate } from "class-validator";
 import { IsPassMatch } from "src/utils/validators/pass-confirm.validator";
 import { IsOneLowerChar } from "src/utils/validators/pass-lower-character.validator";
@@ -8,7 +8,7 @@ import { IsOneUpperChar } from "src/utils/validators/pass-upper-character.valida
 
 export class SignUpDto {
 
-    //@ApiProperty()
+    @ApiProperty()
     @IsString()
     @IsNotEmpty()
     @MaxLength(255)
@@ -16,19 +16,19 @@ export class SignUpDto {
     @IsEmail()
     readonly email: string;
 
-    //@ApiProperty()
+    @ApiProperty()
     @IsString()
     @IsNotEmpty()
     @MaxLength(255)
     readonly firstName: string;
 
-    //@ApiProperty()
+    @ApiProperty()
     @IsString()
     @IsNotEmpty()
     @MaxLength(255)
     readonly lastName: string;
 
-    //@ApiProperty()
+    @ApiProperty()
     @IsString()
     @IsNotEmpty()
     //Checks the min length of the password
@@ -45,7 +45,7 @@ export class SignUpDto {
     @Validate(IsOneSpecialChar, ['password'])
     readonly password: string;
 
-    //@ApiProperty()
+    @ApiProperty()
     @IsString()
     @IsNotEmpty()
     //Checks if the passwords match

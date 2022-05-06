@@ -1,4 +1,4 @@
-import { Get, Injectable, Req, Res, UnauthorizedException } from "@nestjs/common";
+import { ConflictException, Get, Injectable, Req, Res, UnauthorizedException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { User } from "src/models/users/entities/user.entity";
 import { Repository } from "typeorm";
@@ -10,70 +10,27 @@ import { Request, Response } from "express";
 
 @Injectable()
 export class AuthService {
-    constructor(@InjectRepository(User) private readonly userRepository: Repository<User>, private jwtService: JwtService) { }
+    constructor(@InjectRepository(User) private readonly userRepository: Repository<User>) { }
 
     async create(signUpDto: SignUpDto): Promise<User> {
-        const hashedPassword = await bcrypt.hash(signUpDto.password, 12);
+        //Check if user already exists with this email
+        if ((await this.userRepository.findOne({ email: signUpDto.email }))) {
+            throw new ConflictException('User with this email already exist');
+        }
+        //Create object and hash the password
+        const registeredUser = this.userRepository.create(signUpDto);
+        registeredUser.password = await bcrypt.hash(registeredUser.password, await bcrypt.genSalt());
 
-        return this.create({
-            email: signUpDto.email,
-            firstName: signUpDto.firstName,
-            lastName: signUpDto.lastName,
-            password: signUpDto.password,
-            passwordConfirm: null,
-        });
+        //Return creted user
+        return this.userRepository.save(registeredUser);
     }
 
-    async findOne(signInDto: SignInDto, @Res({ passthrough: true }) response: Response) {
-        const foundUser = await this.userRepository.findOne({ email: signInDto.email });
-
-        //Check if he exists
-        if (!foundUser) {
-            throw new UnauthorizedException("Credentials invalid");
-        }
-
-        if (!await bcrypt.compare(signInDto.password, foundUser.password)) {
-            throw new UnauthorizedException("Credentials invalid");
-        }
-
-        const jwt = await this.jwtService.signAsync({ id: foundUser.userId });
-
-        response.cookie('jwt', jwt, { httpOnly: true });
-
-        return {
-            message: 'success'
-        };
+    async findOneEmail(email: string): Promise<User> {
+        return await this.userRepository.findOne({ email: email })
     }
 
-    async findUser(@Req() request: Request) {
-
-        try {
-            const cookie = request.cookies['jwt'];
-
-            const data = await this.jwtService.verifyAsync(cookie);
-
-            if (!data) {
-                throw new UnauthorizedException();
-            }
-
-            const user = await this.userRepository.findOne({ userId: data['id'] });
-
-            //const { password, ...result } = user;
-
-            return user;
-
-        }
-        catch (e) {
-            throw new UnauthorizedException();
-        }
-
+    async findOneId(id: number): Promise<User> {
+        return await this.userRepository.findOne({ userId: id })
     }
 
-    async logoutUser(@Res({ passthrough: true }) response: Response) {
-        response.clearCookie('jwt');
-
-        return {
-            message: 'success'
-        };
-    }
 }

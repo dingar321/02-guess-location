@@ -7,6 +7,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+
   app.use(cookieParser());
 
   //Setup for "Swagger" testing
@@ -27,10 +28,12 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('/', app, document);
 
-  app.enableCors({
+  //Access-Control-Allow-Origin
+  var cors = require('cors');
+  app.use(cors({
     credentials: true,
     origin: 'http://localhost:3000'
-  })
+  }));
 
   await app.listen(process.env.APP_PORT);
 }

@@ -31,7 +31,7 @@ export class AuthController {
     @Post('auth/signin')
     async signin(@Body() signInDto: SignInDto,
         @Res({ passthrough: true }) response: Response): Promise<any> {
-        const foundUser = await this.authService.findOneEmail(signInDto.email);
+        const foundUser = await this.authService.findOneUserEmail(signInDto.email);
 
         //Check if he the user exists
         if (!foundUser) {
@@ -68,7 +68,7 @@ export class AuthController {
             }
 
             //Remove password when returning user
-            const foundUser = await this.authService.findOneId(data.id)
+            const foundUser = await this.authService.findOneUserId(data.id)
             const { password, ...result } = foundUser;
 
             return result;

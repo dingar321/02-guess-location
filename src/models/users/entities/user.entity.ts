@@ -3,7 +3,6 @@ import { Column, Entity, JoinColumn, JoinTable, ManyToMany, OneToOne, PrimaryGen
 @Entity('users')
 export class User {
 
-    //uuid
     @PrimaryGeneratedColumn({ name: 'user_id' })
     userId: number;
 

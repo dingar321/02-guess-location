@@ -25,11 +25,11 @@ export class AuthService {
         return this.userRepository.save(registeredUser);
     }
 
-    async findOneEmail(email: string): Promise<User> {
+    async findOneUserEmail(email: string): Promise<User> {
         return await this.userRepository.findOne({ email: email })
     }
 
-    async findOneId(id: number): Promise<User> {
+    async findOneUserId(id: number): Promise<User> {
         return await this.userRepository.findOne({ userId: id })
     }
 

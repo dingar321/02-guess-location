@@ -1,5 +1,5 @@
 import { Body, Controller, Post, Req, Res, UnauthorizedException } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { User } from 'src/models/users/entities/user.entity';
 import { AuthService } from './auth.service';
 import { SignInDto } from './dto/sign-in.dto';
@@ -7,6 +7,7 @@ import { SignUpDto } from './dto/sign-up.dto';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from "@nestjs/jwt";
 import { Request, Response } from 'express';
+import { create } from 'domain';
 
 @ApiTags('auth')
 @Controller()
@@ -16,11 +17,17 @@ export class AuthController {
         private jwtService: JwtService
     ) { }
 
+    @ApiOperation({ summary: 'Creating a new account' })
     @Post('auth/signup')
     async signup(@Body() signUpDto: SignUpDto): Promise<User> {
-        return this.authService.create(signUpDto);
+        const createdUser = await this.authService.create(signUpDto);
+
+        //Remove password when returning user
+        delete createdUser.password;
+        return createdUser;
     }
 
+    @ApiOperation({ summary: 'login if the user has an existing account' })
     @Post('auth/signin')
     async signin(@Body() signInDto: SignInDto,
         @Res({ passthrough: true }) response: Response): Promise<any> {
@@ -46,6 +53,7 @@ export class AuthController {
         };
     }
 
+    @ApiOperation({ summary: 'Getting the logged in user' })
     @Post('auth/user')
     async user(@Req() request: Request) {
 
@@ -59,6 +67,7 @@ export class AuthController {
                 throw new UnauthorizedException();
             }
 
+            //Remove password when returning user
             const foundUser = await this.authService.findOneId(data.id)
             const { password, ...result } = foundUser;
 
@@ -68,6 +77,16 @@ export class AuthController {
             throw new UnauthorizedException();
         }
 
+    }
+
+    @ApiOperation({ summary: 'Logout if user is logged in' })
+    @Post('auth/logout')
+    async logout(@Res({ passthrough: true }) response: Response) {
+        response.clearCookie('jwt');
+
+        return {
+            message: 'success'
+        };
     }
 }
 

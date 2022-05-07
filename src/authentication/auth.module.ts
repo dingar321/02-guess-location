@@ -1,4 +1,5 @@
 import { Module } from "@nestjs/common";
+import { ConfigModule } from "@nestjs/config";
 import { JwtModule } from "@nestjs/jwt";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { User } from "src/models/users/entities/user.entity";
@@ -7,10 +8,13 @@ import { AuthService } from "./auth.service";
 
 @Module({
     imports: [
+        ConfigModule.forRoot({
+            isGlobal: true,
+        }),
+
         TypeOrmModule.forFeature([User]),
         JwtModule.register({
-            //secret: process.env.JWT_SECRET,
-            secret: 'D1FBED8EAEB7E37694B42C0BB7B4B93B275A44DB66436DBFEAE6D89BF80C57D5',
+            secret: process.env.JWT_SECRET,
             signOptions: { expiresIn: '1d' }
         })
     ],

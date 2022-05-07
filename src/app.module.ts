@@ -12,7 +12,6 @@ import { UserModule } from './models/users/user.module';
 
     ConfigModule.forRoot({
       isGlobal: true,
-      ignoreEnvFile: false,
     }),
 
 

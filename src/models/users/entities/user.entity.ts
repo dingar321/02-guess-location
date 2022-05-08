@@ -50,14 +50,14 @@ export class User {
         name: 's3_key',
         type: 'varchar',
         length: 255,
-        nullable: true
+        nullable: false
     })
     s3key: string;
 
     @Column({
         name: 's3_data',
         type: 'jsonb',
-        nullable: true
+        nullable: false
     })
     s3Data?: object;
 

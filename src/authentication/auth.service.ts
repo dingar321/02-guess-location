@@ -22,7 +22,7 @@ export class AuthService {
         const hashedPassword = await bcrypt.hash(signUpDto.password, await bcrypt.genSalt());
 
         //Creating the user with all of the properties
-        const registeredUser = await this.userRepository.create({
+        const createdUser = await this.userRepository.create({
             email: signUpDto.email,
             firstName: signUpDto.firstName,
             lastName: signUpDto.lastName,
@@ -33,7 +33,7 @@ export class AuthService {
         });
 
         //Return creted user
-        return await this.userRepository.save(registeredUser);
+        return await this.userRepository.save(createdUser);
     }
 
     async findOneUserEmail(email: string): Promise<User> {
@@ -43,5 +43,11 @@ export class AuthService {
     async findOneUserId(id: number): Promise<User> {
         return await this.userRepository.findOne({ userId: id })
     }
+
+    //Update users password with the reset token
+    async update(id: number, data: any): Promise<any> {
+        return await this.userRepository.update(id, data);
+    }
+
 
 }

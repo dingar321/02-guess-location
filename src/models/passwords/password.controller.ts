@@ -5,6 +5,7 @@ import { ForgotPasswordDto } from "./dto/forgot-password.dto";
 import { ResetPasswordDto } from "./dto/reset-password.dto";
 import { PasswordService } from "./password.service";
 import * as bcrypt from 'bcrypt';
+import { AuthService } from "src/authentication/auth.service";
 
 @ApiTags('password')
 @Controller()
@@ -12,6 +13,7 @@ export class PasswordController {
     constructor(
         private passwordService: PasswordService,
         private mailerService: MailerService,
+        private authService: AuthService,
     ) { }
 
     @Post('user/forgot-password')
@@ -37,7 +39,7 @@ export class PasswordController {
     async reset(@Body() resetPasswordDto: ResetPasswordDto) {
 
         const foundPasswordReset = await this.passwordService.findOneResetToken(resetPasswordDto.resetToken)
-        const foundUser = await this.passwordService.findOneUserEmail(foundPasswordReset.email);
+        const foundUser = await this.authService.findOneUserEmail(foundPasswordReset.email);
 
         if (!foundUser) {
             throw new NotFoundException('User not found');
@@ -45,7 +47,7 @@ export class PasswordController {
 
         const hashedPassword = await bcrypt.hash(resetPasswordDto.password, await bcrypt.genSalt());
 
-        await this.passwordService.update(foundUser.userId, { password: hashedPassword });
+        await this.authService.update(foundUser.userId, { password: hashedPassword });
 
         return {
             message: 'success'

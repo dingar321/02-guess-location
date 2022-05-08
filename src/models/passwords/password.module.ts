@@ -1,6 +1,7 @@
 import { MailerModule } from "@nestjs-modules/mailer";
 import { Module } from "@nestjs/common";
 import { TypeOrmModule } from "@nestjs/typeorm";
+import { AuthModule } from "src/authentication/auth.module";
 import { User } from "../users/entities/user.entity";
 import { Password } from "./entities/password.entity";
 import { PasswordController } from "./password.controller";
@@ -19,6 +20,9 @@ import { PasswordService } from "./password.service";
                 from: 'admin@Geotagger.com',
             }
         }),
+
+        //Imported modules
+        AuthModule,
     ],
     controllers: [PasswordController],
     providers: [PasswordService],

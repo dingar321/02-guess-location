@@ -7,10 +7,7 @@ import { Password } from "./entities/password.entity";
 
 @Injectable()
 export class PasswordService {
-    constructor(
-        @InjectRepository(Password) private readonly passwordRepository: Repository<Password>,
-        @InjectRepository(User) private readonly userRepository: Repository<User>
-    ) { }
+    constructor(@InjectRepository(Password) private readonly passwordRepository: Repository<Password>) { }
 
     async create(forgotPasswordDto: ForgotPasswordDto, resetToken: string) {
         return this.passwordRepository.save({
@@ -24,13 +21,5 @@ export class PasswordService {
     }
 
 
-    //Move
-    async findOneUserEmail(email: string): Promise<User> {
-        return await this.userRepository.findOne({ email: email })
-    }
-
-    async update(id: number, data: any): Promise<any> {
-        return await this.userRepository.update(id, data);
-    }
 
 }

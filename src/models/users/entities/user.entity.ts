@@ -47,19 +47,12 @@ export class User {
     timeRegistered: Timestamp;
 
     @Column({
-        name: 's3_key',
+        name: 's3_image_key',
         type: 'varchar',
         length: 255,
         nullable: false
     })
-    s3key: string;
-
-    @Column({
-        name: 's3_data',
-        type: 'jsonb',
-        nullable: false
-    })
-    s3Data?: object;
+    s3Imagekey: string;
 
     @Column("int", {
         array: true,

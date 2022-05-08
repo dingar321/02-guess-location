@@ -56,7 +56,7 @@ export class GuessController {
             const errorDistance = await this.haversineDistance(
                 foundLocation.longitude, foundLocation.latitude, guessAddDto.longitude, guessAddDto.latitude);
 
-            return await this.guessService.create(guessAddDto, foundLocation, errorDistance);
+            return await this.guessService.create(guessAddDto, foundUser, foundLocation, errorDistance);
 
         } catch (e) {
             throw new UnauthorizedException(e);

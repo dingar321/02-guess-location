@@ -32,8 +32,7 @@ export class AuthService {
             lastName: signUpDto.lastName,
             password: hashedPassword,
             timeRegistered: timeRegistered,
-            s3key: s3Data.key,
-            s3Data: s3Data
+            s3Imagekey: s3Data.key
         });
 
         //Return creted user

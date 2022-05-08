@@ -26,8 +26,7 @@ export class LocationService {
             longitude: locationAddDto.longitude,
             latitude: locationAddDto.latitude,
             timePosted: timePosted,
-            s3key: s3Data.key,
-            s3Data: s3Data,
+            s3Imagekey: s3Data.key,
             userTk: foundUser
         })
 

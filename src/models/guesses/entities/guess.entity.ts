@@ -36,7 +36,6 @@ export class Guess {
     })
     timePosted: Timestamp;
 
-    /* Already saved in the location itself
     //user 1--m guess
     @ManyToOne(type => User, {
         nullable: false,
@@ -46,7 +45,6 @@ export class Guess {
         name: 'user_tk'
     })
     userTk: User;
-    */
 
     //location 1--m guess
     @ManyToOne(type => Location, {

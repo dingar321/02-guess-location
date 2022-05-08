@@ -1,5 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
+import console from "console";
 import { ImageUploadeService } from "src/utils/S3Service/image-uploade.service";
 import { Repository } from "typeorm";
 import { User } from "../users/entities/user.entity";
@@ -40,7 +41,21 @@ export class LocationService {
     }
 
     async findRandom(): Promise<Location> {
-        const locationArray = await this.locationRepository.find();
+        const locationArray = await this.locationRepository.find({
+            relations: ['userTk'],
+        });
+
         return locationArray[Math.floor(Math.random() * locationArray.length)];
+    }
+
+    async find(): Promise<Location[]> {
+        const locations = await this.locationRepository.find({
+            relations: ['userTk'],
+            order: {
+                locationsId: 'DESC'
+            }
+        });
+
+        return locations;
     }
 }

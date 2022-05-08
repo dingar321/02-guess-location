@@ -44,4 +44,13 @@ export class LocationController {
     async locationRadnom(): Promise<Location> {
         return await this.locationService.findRandom();
     }
+
+    @ApiOperation({ summary: 'Get all locations/posts' })
+    @Get('location/list')
+    async locations(): Promise<Location[]> {
+        return await this.locationService.find();
+    }
+
+
+
 }

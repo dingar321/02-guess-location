@@ -1,11 +1,14 @@
 import { MailerService } from "@nestjs-modules/mailer";
-import { Body, Controller, NotFoundException, Post } from "@nestjs/common";
-import { ApiTags } from "@nestjs/swagger";
+import { Body, Controller, NotFoundException, Post, Req, UnauthorizedException } from "@nestjs/common";
+import { ApiOperation, ApiTags } from "@nestjs/swagger";
 import { ForgotPasswordDto } from "./dto/forgot-password.dto";
 import { ResetPasswordDto } from "./dto/reset-password.dto";
 import { PasswordService } from "./password.service";
 import * as bcrypt from 'bcrypt';
 import { AuthService } from "src/authentication/auth.service";
+import { ChangePasswordDto } from "../users/dto/change-password.dto";
+import { Request, Response } from 'express';
+import { JwtService } from "@nestjs/jwt";
 
 @ApiTags('password')
 @Controller()
@@ -16,6 +19,7 @@ export class PasswordController {
         private authService: AuthService,
     ) { }
 
+    @ApiOperation({ summary: 'Get token for a forgotten password' })
     @Post('user/forgot-password')
     async forgot(@Body() forgotPasswordDto: ForgotPasswordDto) {
         const resetToken = Math.random().toString(20).substring(2, 12);
@@ -35,6 +39,7 @@ export class PasswordController {
         };
     }
 
+    @ApiOperation({ summary: 'Use the token to change the forgotten password' })
     @Post('user/reset-password')
     async reset(@Body() resetPasswordDto: ResetPasswordDto) {
 

@@ -1,7 +1,8 @@
-import { Injectable } from "@nestjs/common";
+import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { User } from "../users/entities/user.entity";
+import { ChangePasswordDto } from "../users/dto/change-password.dto";
 import { ForgotPasswordDto } from "./dto/forgot-password.dto";
 import { Password } from "./entities/password.entity";
 
@@ -19,7 +20,5 @@ export class PasswordService {
     async findOneResetToken(resetToken: string) {
         return this.passwordRepository.findOne({ resetToken: resetToken })
     }
-
-
 
 }

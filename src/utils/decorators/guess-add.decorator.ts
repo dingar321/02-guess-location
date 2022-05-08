@@ -1,6 +1,6 @@
 import { ApiBody } from '@nestjs/swagger';
 
-export const LocationAddDecorator = (fileName: string = 'file'): MethodDecorator => (
+export const GuessAddDecorator = (fileName: string = 'file'): MethodDecorator => (
     target: any,
     propertyKey: string,
     descriptor: PropertyDescriptor,
@@ -9,13 +9,8 @@ export const LocationAddDecorator = (fileName: string = 'file'): MethodDecorator
         schema: {
             type: 'object',
             properties: {
-                locationName: { type: 'string' },
                 longitude: { type: 'number' },
                 latitude: { type: 'number' },
-                locationImage: {
-                    type: 'string',
-                    format: 'binary',
-                },
             },
         },
     })(target, propertyKey, descriptor);

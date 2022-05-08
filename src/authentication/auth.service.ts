@@ -11,11 +11,15 @@ import { ImageUploadeService } from "src/utils/S3Service/image-uploade.service";
 export class AuthService {
     constructor(@InjectRepository(User) private readonly userRepository: Repository<User>, private imageUploadeService: ImageUploadeService) { }
 
-    async create(signUpDto: SignUpDto, profileImage: Express.Multer.File, timeRegistered: Date): Promise<User> {
+    async create(signUpDto: SignUpDto, profileImage: Express.Multer.File): Promise<User> {
         //Check if user already exists with this email
         if ((await this.userRepository.findOne({ email: signUpDto.email }))) {
             throw new ConflictException('User with this email already exist');
         }
+
+        //Time of registration
+        var moment = require('moment')
+        var timeRegistered = moment().format('YYYY-MM-DD HH:mm:ss')
 
         //hashing the password and getting the s3 key/data to store in the database
         const s3Data = await this.imageUploadeService.uploadImage(profileImage);
@@ -47,6 +51,19 @@ export class AuthService {
     //Update users password with the reset token
     async update(id: number, data: any): Promise<any> {
         return await this.userRepository.update(id, data);
+    }
+
+    async userGuessed(user: User, userId: number, locationId: number) {
+
+        const userGuesses = user.guesses;
+        userGuesses.push(locationId);
+
+        const foundUser = await this.userRepository.preload({
+            //Set the preload info for the user 
+            userId: +userId,
+            guesses: userGuesses
+        });
+        await this.userRepository.save(foundUser);
     }
 
 

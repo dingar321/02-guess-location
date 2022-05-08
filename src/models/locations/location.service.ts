@@ -10,7 +10,11 @@ import { Location } from "./entities/location.entity";
 export class LocationService {
     constructor(@InjectRepository(Location) private readonly locationRepository: Repository<Location>, private imageUploadeService: ImageUploadeService) { }
 
-    async create(locationAddDto: LocationAddDto, locationImage: Express.Multer.File, timePosted: Date, foundUser: User): Promise<Location> {
+    async create(locationAddDto: LocationAddDto, locationImage: Express.Multer.File, foundUser: User): Promise<Location> {
+
+        //Time of posting
+        var moment = require('moment')
+        var timePosted = moment().format('YYYY-MM-DD HH:mm:ss')
 
         //Getting the s3 key/data to store in the database
         const s3Data = await this.imageUploadeService.uploadImage(locationImage);
@@ -28,5 +32,10 @@ export class LocationService {
 
         //Return creted location
         return await this.locationRepository.save(createdLocation);
+    }
+
+
+    async findOne(locationId: number): Promise<Location> {
+        return await this.locationRepository.findOne({ locationsId: locationId });
     }
 }

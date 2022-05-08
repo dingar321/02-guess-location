@@ -61,4 +61,10 @@ export class User {
     })
     s3Data?: object;
 
+    @Column("int", {
+        array: true,
+        default: {}
+    })
+    guesses: Number[];
+
 }

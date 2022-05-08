@@ -24,11 +24,7 @@ export class AuthController {
     async signup(@Body() signUpDto: SignUpDto,
         @UploadedFile() profileImage: Express.Multer.File): Promise<User> {
 
-        //Time of registration
-        var moment = require('moment')
-        var timeRegistered = moment().format('YYYY-MM-DD HH:mm:ss')
-
-        const createdUser = await this.authService.create(signUpDto, profileImage, timeRegistered);
+        const createdUser = await this.authService.create(signUpDto, profileImage);
 
         //Remove password when returning user
         delete createdUser.password;

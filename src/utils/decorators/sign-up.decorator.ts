@@ -1,5 +1,4 @@
 import { ApiBody } from '@nestjs/swagger';
-import { SignUpDto } from 'src/authentication/dto/sign-up.dto';
 
 export const SignUpDecorator = (fileName: string = 'file'): MethodDecorator => (
     target: any,

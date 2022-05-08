@@ -9,7 +9,6 @@ import { AuthService } from "src/authentication/auth.service";
 import { Location } from "./entities/location.entity";
 import { FileInterceptor } from "@nestjs/platform-express";
 
-//PLEASE ADD TYPE AFTER
 
 @ApiTags('location')
 @Controller()
@@ -28,21 +27,15 @@ export class LocationController {
             const data = await this.jwtService.verifyAsync(cookie);
 
             if (!data) {
-                throw new UnauthorizedException();
+                throw new UnauthorizedException('You must be signed in to access this function');
             }
-
-            //Time of posting
-            var moment = require('moment')
-            var timePosted = moment().format('YYYY-MM-DD HH:mm:ss')
 
             //Getting the user that is adding  
             const foundUser = await this.authService.findOneUserId(data.id)
-            return await this.locationService.create(locationAddDto, locationImage, timePosted, foundUser);
+            return await this.locationService.create(locationAddDto, locationImage, foundUser);
 
         } catch (e) {
             throw new UnauthorizedException('You must be signed in to access this function');
         }
-
-
     }
 }

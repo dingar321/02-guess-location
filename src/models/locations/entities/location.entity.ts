@@ -51,7 +51,7 @@ export class Location {
     })
     s3Data?: object;
 
-    //user 1--m quote
+    //user 1--m location
     @ManyToOne(type => User, {
         nullable: false,
         cascade: true

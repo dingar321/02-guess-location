@@ -2,6 +2,8 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './authentication/auth.module';
+import { Guess } from './models/guesses/entities/guess.entity';
+import { GuessModule } from './models/guesses/guess.module';
 import { Location } from './models/locations/entities/location.entity';
 import { LocationModule } from './models/locations/location.module';
 import { Password } from './models/passwords/entities/password.entity';
@@ -25,7 +27,7 @@ import { UserModule } from './models/users/user.module';
       username: process.env.POSTGRES_USER,
       password: process.env.POSTGRES_PASSWORD,
       database: process.env.POSTGRESS_DATABASE,
-      entities: [User, Password, Location],
+      entities: [User, Password, Location, Guess],
       autoLoadEntities: true,
       //NOTICE: Disable in production!
       synchronize: true,
@@ -34,7 +36,8 @@ import { UserModule } from './models/users/user.module';
 
     //My modules
     AuthModule, UserModule,
-    PasswordModule, LocationModule
+    PasswordModule, LocationModule,
+    GuessModule,
   ],
   controllers: [],
   providers: [],

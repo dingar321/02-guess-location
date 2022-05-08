@@ -1,4 +1,4 @@
-import { Column, Entity, JoinColumn, JoinTable, ManyToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, Timestamp, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity('users')
 export class User {
@@ -38,4 +38,27 @@ export class User {
         nullable: false,
     })
     password: string;
+
+    @Column({
+        name: 'time_registered',
+        type: 'timestamp',
+        nullable: false,
+    })
+    timeRegistered: Timestamp;
+
+    @Column({
+        name: 's3_key',
+        type: 'varchar',
+        length: 255,
+        nullable: true
+    })
+    s3key: string;
+
+    @Column({
+        name: 's3_data',
+        type: 'jsonb',
+        nullable: true
+    })
+    s3Data?: object;
+
 }

@@ -1,28 +1,39 @@
-import { ConflictException, Get, Injectable, Req, Res, UnauthorizedException } from "@nestjs/common";
+import { ConflictException, Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { User } from "src/models/users/entities/user.entity";
 import { Repository } from "typeorm";
 import { SignUpDto } from "./dto/sign-up.dto";
 import * as bcrypt from 'bcrypt';
-import { SignInDto } from "./dto/sign-in.dto";
-import { JwtService } from "@nestjs/jwt";
-import { Request, Response } from "express";
+import { ImageUploadeService } from "src/utils/S3Service/image-uploade.service";
+
 
 @Injectable()
 export class AuthService {
-    constructor(@InjectRepository(User) private readonly userRepository: Repository<User>) { }
+    constructor(@InjectRepository(User) private readonly userRepository: Repository<User>, private imageUploadeService: ImageUploadeService) { }
 
-    async create(signUpDto: SignUpDto): Promise<User> {
+    async create(signUpDto: SignUpDto, profileImage: Express.Multer.File, timeRegistered: Date): Promise<User> {
         //Check if user already exists with this email
         if ((await this.userRepository.findOne({ email: signUpDto.email }))) {
             throw new ConflictException('User with this email already exist');
         }
-        //Create object and hash the password
-        const registeredUser = this.userRepository.create(signUpDto);
-        registeredUser.password = await bcrypt.hash(registeredUser.password, await bcrypt.genSalt());
+
+        //hashing the password and getting the s3 key/data to store in the database
+        const s3Data = await this.imageUploadeService.uploadImage(profileImage);
+        const hashedPassword = await bcrypt.hash(signUpDto.password, await bcrypt.genSalt());
+
+        //Creating the user with all of the properties
+        const registeredUser = await this.userRepository.create({
+            email: signUpDto.email,
+            firstName: signUpDto.firstName,
+            lastName: signUpDto.lastName,
+            password: hashedPassword,
+            timeRegistered: timeRegistered,
+            s3key: s3Data.key,
+            s3Data: s3Data
+        });
 
         //Return creted user
-        return this.userRepository.save(registeredUser);
+        return await this.userRepository.save(registeredUser);
     }
 
     async findOneUserEmail(email: string): Promise<User> {

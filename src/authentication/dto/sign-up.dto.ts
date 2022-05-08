@@ -1,5 +1,7 @@
 import { ApiProperty } from "@nestjs/swagger";
+import { Transform } from "class-transformer";
 import { IsEmail, IsNotEmpty, IsString, Length, Matches, MaxLength, maxLength, MinLength, validate, Validate } from "class-validator";
+import { Multer } from "multer";
 import { IsPassMatch } from "src/utils/validators/pass-confirm.validator";
 import { IsOneLowerChar } from "src/utils/validators/pass-lower-character.validator";
 import { IsOneNumericDigit } from "src/utils/validators/pass-numeric-digit.validator";

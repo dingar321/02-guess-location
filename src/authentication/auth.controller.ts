@@ -1,5 +1,5 @@
-import { Body, Controller, Post, Req, Res, UnauthorizedException } from '@nestjs/common';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { Body, Controller, Post, Req, Res, UnauthorizedException, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { ApiBody, ApiConsumes, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { User } from 'src/models/users/entities/user.entity';
 import { AuthService } from './auth.service';
 import { SignInDto } from './dto/sign-in.dto';
@@ -8,6 +8,11 @@ import * as bcrypt from 'bcrypt';
 import { JwtService } from "@nestjs/jwt";
 import { Request, Response } from 'express';
 import { create } from 'domain';
+import { FileInterceptor } from '@nestjs/platform-express/multer';
+import { ok } from 'assert';
+import { SignUpDecorator } from 'src/utils/decorators/sign-up.decorator';
+import { ImageUploadeService } from 'src/utils/S3Service/image-uploade.service';
+
 
 @ApiTags('auth')
 @Controller()
@@ -19,11 +24,21 @@ export class AuthController {
 
     @ApiOperation({ summary: 'Creating a new account' })
     @Post('auth/signup')
-    async signup(@Body() signUpDto: SignUpDto): Promise<User> {
-        const createdUser = await this.authService.create(signUpDto);
+    @ApiConsumes('multipart/form-data')
+    @SignUpDecorator()
+    @UseInterceptors(FileInterceptor('profileImage'))
+    async signup(@Body() signUpDto: SignUpDto,
+        @UploadedFile() profileImage: Express.Multer.File): Promise<User> {
+
+        //Time of registration
+        var moment = require('moment')
+        var timeRegistered = moment().format('YYYY-MM-DD HH:mm:ss')
+
+        const createdUser = await this.authService.create(signUpDto, profileImage, timeRegistered);
 
         //Remove password when returning user
         delete createdUser.password;
+
         return createdUser;
     }
 

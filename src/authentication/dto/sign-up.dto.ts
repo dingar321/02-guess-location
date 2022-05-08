@@ -14,7 +14,6 @@ export class SignUpDto {
     @IsString()
     @IsNotEmpty()
     @MaxLength(255)
-    //Checks if the provided email is an actual email
     @IsEmail()
     readonly email: string;
 

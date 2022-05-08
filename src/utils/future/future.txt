@@ -1,0 +1,1 @@
+- When chainging email, we also get a token and must verify the email !

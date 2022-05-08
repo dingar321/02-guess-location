@@ -53,8 +53,8 @@ export class AuthService {
         return await this.userRepository.update(id, data);
     }
 
+    //Record for the location, we cannot guess on a location twice
     async userGuessed(user: User, userId: number, locationId: number) {
-
         const userGuesses = user.guesses;
         userGuesses.push(locationId);
 

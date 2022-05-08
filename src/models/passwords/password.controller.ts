@@ -13,11 +13,7 @@ import { JwtService } from "@nestjs/jwt";
 @ApiTags('password')
 @Controller()
 export class PasswordController {
-    constructor(
-        private passwordService: PasswordService,
-        private mailerService: MailerService,
-        private authService: AuthService,
-    ) { }
+    constructor(private passwordService: PasswordService, private mailerService: MailerService, private authService: AuthService,) { }
 
     @ApiOperation({ summary: 'Get token for a forgotten password' })
     @Post('user/forgot-password')

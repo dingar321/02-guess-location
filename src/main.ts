@@ -20,9 +20,9 @@ async function bootstrap() {
 
   //Setup for "Swagger" testing
   const config = new DocumentBuilder()
-    .setTitle('02-guess-locations')
-    .setDescription('The second project in the "SkillUp Mentor" program')
-    .setVersion('0.1.0')
+    .setTitle('Geotagger')
+    .setDescription('The second project in the "SkillUp Mentor" program called: 02-guess-locations. User can signup and add locations where they ')
+    .setVersion('WIP')
     .addBearerAuth({
       type: 'http',
       scheme: 'bearer',

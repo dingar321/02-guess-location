@@ -1,4 +1,4 @@
-import { Body, Controller, Post, Req, UnauthorizedException, UploadedFile, UseInterceptors } from "@nestjs/common";
+import { Body, Controller, Get, Post, Req, UnauthorizedException, UploadedFile, UseInterceptors } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import { ApiConsumes, ApiOperation, ApiTags } from "@nestjs/swagger";
 import { LocationAddDecorator } from "src/utils/decorators/location-add.decorator";
@@ -37,5 +37,11 @@ export class LocationController {
         } catch (e) {
             throw new UnauthorizedException('You must be signed in to access this function');
         }
+    }
+
+    @ApiOperation({ summary: 'Get random location/post' })
+    @Get('location/random')
+    async locationRadnom(): Promise<Location> {
+        return await this.locationService.findRandom();
     }
 }

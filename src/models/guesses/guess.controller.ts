@@ -15,7 +15,7 @@ import { GuessService } from "./guess.service";
 export class GuessController {
     constructor(private guessService: GuessService, private jwtService: JwtService, private locationService: LocationService, private authService: AuthService) { }
 
-    @ApiOperation({ summary: 'Add a new guess for a specific location' })
+    @ApiOperation({ summary: 'Add a new guess for a specific location/post' })
     @Post('/guess/:id/add')
     @ApiConsumes('multipart/form-data')
     @GuessAddDecorator()

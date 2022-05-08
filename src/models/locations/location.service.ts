@@ -38,4 +38,9 @@ export class LocationService {
     async findOne(locationId: number): Promise<Location> {
         return await this.locationRepository.findOne({ locationsId: locationId });
     }
+
+    async findRandom(): Promise<Location> {
+        const locationArray = await this.locationRepository.find();
+        return locationArray[Math.floor(Math.random() * locationArray.length)];
+    }
 }

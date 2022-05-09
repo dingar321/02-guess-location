@@ -4,7 +4,7 @@ import { User } from "src/models/users/entities/user.entity";
 import { Repository } from "typeorm";
 import { SignUpDto } from "./dto/sign-up.dto";
 import * as bcrypt from 'bcrypt';
-import { S3BucketService } from "src/utils/s3-bucket/s3-bucket.service";
+import { S3BucketService } from "src/common/s3-bucket/s3-bucket.service";
 
 
 @Injectable()

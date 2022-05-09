@@ -9,7 +9,7 @@ import { User } from "./entities/user.entity";
 import { ChangeInformationDto } from "./dto/change-information.dto";
 import * as bcrypt from 'bcrypt';
 import { FileInterceptor } from "@nestjs/platform-express";
-import { UploadImage } from "src/utils/decorators/upload-image.decorator";
+import { UploadImage } from "src/common/decorators/upload-image.decorator";
 import { profile } from "console";
 
 @ApiTags('user')

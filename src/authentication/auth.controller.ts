@@ -8,7 +8,7 @@ import * as bcrypt from 'bcrypt';
 import { JwtService } from "@nestjs/jwt";
 import { Request, Response } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express/multer';
-import { SignUpDecorator } from 'src/utils/decorators/sign-up.decorator';
+import { SignUpDecorator } from 'src/common/decorators/sign-up.decorator';
 
 
 @ApiTags('auth')

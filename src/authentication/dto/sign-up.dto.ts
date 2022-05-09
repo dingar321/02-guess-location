@@ -2,11 +2,11 @@ import { ApiProperty } from "@nestjs/swagger";
 import { Transform } from "class-transformer";
 import { IsEmail, IsNotEmpty, IsString, Length, Matches, MaxLength, maxLength, MinLength, validate, Validate } from "class-validator";
 import { Multer } from "multer";
-import { IsPassMatch } from "src/utils/validators/pass-confirm.validator";
-import { IsOneLowerChar } from "src/utils/validators/pass-lower-character.validator";
-import { IsOneNumericDigit } from "src/utils/validators/pass-numeric-digit.validator";
-import { IsOneSpecialChar } from "src/utils/validators/pass-special-character.validator";
-import { IsOneUpperChar } from "src/utils/validators/pass-upper-character.validator";
+import { IsPassMatch } from "src/common/validators/pass-confirm.validator";
+import { IsOneLowerChar } from "src/common/validators/pass-lower-character.validator";
+import { IsOneNumericDigit } from "src/common/validators/pass-numeric-digit.validator";
+import { IsOneSpecialChar } from "src/common/validators/pass-special-character.validator";
+import { IsOneUpperChar } from "src/common/validators/pass-upper-character.validator";
 
 export class SignUpDto {
 

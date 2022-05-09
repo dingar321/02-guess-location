@@ -1,7 +1,8 @@
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import console from "console";
-import { S3BucketService } from "src/utils/s3-bucket/s3-bucket.service";
+import { PaginationQueryDto } from "src/common/dto/pagination-query.dto";
+import { S3BucketService } from "src/common/s3-bucket/s3-bucket.service";
 import { Repository } from "typeorm";
 import { User } from "../users/entities/user.entity";
 import { LocationAddDto } from "./dto/location-add.dto";
@@ -47,12 +48,13 @@ export class LocationService {
         return locationArray[Math.floor(Math.random() * locationArray.length)];
     }
 
-    async find(): Promise<Location[]> {
+    async findAll(limit: number): Promise<Location[]> {
         const locations = await this.locationRepository.find({
             relations: ['userTk'],
             order: {
                 locationsId: 'DESC'
-            }
+            },
+            take: limit,
         });
 
         return locations;

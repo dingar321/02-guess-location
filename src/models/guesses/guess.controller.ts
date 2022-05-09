@@ -4,7 +4,7 @@ import { FileInterceptor } from "@nestjs/platform-express";
 import { ApiConsumes, ApiOperation, ApiTags } from "@nestjs/swagger";
 import { Request } from "express";
 import { AuthService } from "src/authentication/auth.service";
-import { GuessAddDecorator } from "src/utils/decorators/guess-add.decorator";
+import { GuessAddDecorator } from "src/common/decorators/guess-add.decorator";
 import { LocationService } from "../locations/location.service";
 import { GuessAddDto } from "./dto/guess-add.dto";
 import { Guess } from "./entities/guess.entity";

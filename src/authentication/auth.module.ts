@@ -3,7 +3,7 @@ import { ConfigModule } from "@nestjs/config";
 import { JwtModule } from "@nestjs/jwt";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { User } from "src/models/users/entities/user.entity";
-import { S3BucketService } from "src/utils/s3-bucket/s3-bucket.service";
+import { S3BucketService } from "src/common/s3-bucket/s3-bucket.service";
 import { AuthController } from "./auth.controller";
 import { AuthService } from "./auth.service";
 

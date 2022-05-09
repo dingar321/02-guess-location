@@ -1,13 +1,14 @@
-import { Body, Controller, Get, Post, Req, UnauthorizedException, UploadedFile, UseInterceptors } from "@nestjs/common";
+import { Body, Controller, Get, Param, Post, Query, Req, UnauthorizedException, UploadedFile, UseInterceptors } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import { ApiConsumes, ApiOperation, ApiTags } from "@nestjs/swagger";
-import { LocationAddDecorator } from "src/utils/decorators/location-add.decorator";
+import { LocationAddDecorator } from "src/common/decorators/location-add.decorator";
 import { LocationAddDto } from "./dto/location-add.dto";
 import { LocationService } from "./location.service";
 import { Request } from 'express';
 import { AuthService } from "src/authentication/auth.service";
 import { Location } from "./entities/location.entity";
 import { FileInterceptor } from "@nestjs/platform-express";
+import { PaginationQueryDto } from "src/common/dto/pagination-query.dto";
 
 
 @ApiTags('location')
@@ -45,10 +46,10 @@ export class LocationController {
         return await this.locationService.findRandom();
     }
 
-    @ApiOperation({ summary: 'Get all locations/posts' })
-    @Get('location/list')
-    async locations(): Promise<Location[]> {
-        return await this.locationService.find();
+    @ApiOperation({ summary: 'Get all locations/posts (Pagination)' })
+    @Get('location/list/limit=:limit')
+    async locations(@Param('limit') limit: number): Promise<Location[]> {
+        return await this.locationService.findAll(limit);
     }
 
 

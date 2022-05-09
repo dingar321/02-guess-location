@@ -1,6 +1,6 @@
 import { BadRequestException, ConflictException, Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { S3BucketService } from "src/utils/s3-bucket/s3-bucket.service";
+import { S3BucketService } from "src/common/s3-bucket/s3-bucket.service";
 import { Repository } from "typeorm";
 import { ChangePasswordDto } from "./dto/change-password.dto";
 import { User } from "./entities/user.entity";

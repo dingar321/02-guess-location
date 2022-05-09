@@ -48,9 +48,31 @@ export class LocationController {
 
     @ApiOperation({ summary: 'Get all locations/posts (Pagination)' })
     @ApiQuery({ name: "limit", type: String, description: "A limit parameter (Optional)", required: false })
-    @Get('location/list/limit=:limit?')
+    @Get('location/list')
     async locations(@Query('limit') limit?: number): Promise<Location[]> {
         return await this.locationService.findAll(limit);
+    }
+
+    @ApiOperation({ summary: 'Get the logged users posted locations' })
+    @ApiQuery({ name: "limit", type: String, description: "A limit parameter (Optional)", required: false })
+    @Post('/location/user-posted')
+    async locationsUserPosted(@Query('limit') limit: number, @Req() request: Request) {
+        try {
+            const cookie = request.cookies['jwt'];
+            const data = await this.jwtService.verifyAsync(cookie);
+
+            if (!data) {
+                throw new UnauthorizedException('You must be signed in to access this function');
+            }
+
+            //Getting the user, the on who wants his guesses  
+            const foundUser = await this.authService.findOneUserId(data.id)
+
+            return this.locationService.findAllUsersLocations(foundUser.userId, limit);
+
+        } catch (e) {
+            throw new UnauthorizedException(e.message);
+        }
     }
 
 

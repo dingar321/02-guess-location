@@ -64,4 +64,20 @@ export class LocationService {
 
         return locations;
     }
+
+
+    async findAllUsersLocations(userId: number, limit: number) {
+        const usersLocations = await this.locationRepository.find({
+            where: {
+                userTk: userId
+            },
+            take: limit,
+            order: {
+                locationsId: 'DESC'
+            },
+            relations: ['userTk'],
+        });
+
+        return usersLocations;
+    }
 }

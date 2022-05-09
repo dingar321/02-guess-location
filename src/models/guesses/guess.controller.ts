@@ -15,7 +15,7 @@ import { GuessService } from "./guess.service";
 export class GuessController {
     constructor(private guessService: GuessService, private jwtService: JwtService, private locationService: LocationService, private authService: AuthService) { }
 
-    @ApiOperation({ summary: 'Add a new guess for a specific location/post' })
+    @ApiOperation({ summary: 'Add a new guess for a specific location' })
     @Post('/guess/add/:id')
     @ApiConsumes('multipart/form-data')
     @GuessAddDecorator()
@@ -82,7 +82,7 @@ export class GuessController {
             //Getting the user, the on who wants his guesses  
             const foundUser = await this.authService.findOneUserId(data.id)
 
-            return this.guessService.findAll(foundUser.userId, limit);
+            return this.guessService.findAllUsersGuesses(foundUser.userId, limit);
 
         } catch (e) {
             throw new UnauthorizedException(e.message);

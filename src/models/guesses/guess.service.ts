@@ -28,7 +28,7 @@ export class GuessService {
         return await this.guessRepository.save(createdGuess);
     }
 
-    async findAll(userId: number, limit: number): Promise<Guess[]> {
+    async findAllUsersGuesses(userId: number, limit: number): Promise<Guess[]> {
         const usersGuesses = await this.guessRepository.find({
             where: {
                 userTk: userId

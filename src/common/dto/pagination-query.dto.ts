@@ -7,11 +7,4 @@ export class PaginationQueryDto {
     @IsPositive()
     //The number of items to show 
     limit: number;
-
-
-    @IsOptional()
-    @IsPositive()
-    //The number of items to  
-    //skip before we start to show
-    offset: number;
 }

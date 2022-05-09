@@ -37,7 +37,12 @@ export class LocationService {
 
 
     async findOne(locationId: number): Promise<Location> {
-        return await this.locationRepository.findOne({ locationsId: locationId });
+        return await this.locationRepository.findOne({
+            where: {
+                locationsId: locationId,
+            },
+            relations: ['userTk'],
+        });
     }
 
     async findRandom(): Promise<Location> {

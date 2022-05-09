@@ -1,7 +1,7 @@
-import { BadRequestException, Body, Controller, Param, Post, Req, UnauthorizedException, UseInterceptors } from "@nestjs/common";
+import { BadRequestException, Body, Controller, Param, Post, Query, Req, UnauthorizedException, UseInterceptors } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import { FileInterceptor } from "@nestjs/platform-express";
-import { ApiConsumes, ApiOperation, ApiTags } from "@nestjs/swagger";
+import { ApiConsumes, ApiOperation, ApiQuery, ApiTags } from "@nestjs/swagger";
 import { Request } from "express";
 import { AuthService } from "src/authentication/auth.service";
 import { GuessAddDecorator } from "src/common/decorators/guess-add.decorator";
@@ -16,12 +16,11 @@ export class GuessController {
     constructor(private guessService: GuessService, private jwtService: JwtService, private locationService: LocationService, private authService: AuthService) { }
 
     @ApiOperation({ summary: 'Add a new guess for a specific location/post' })
-    @Post('/guess/:id/add')
+    @Post('/guess/add/:id')
     @ApiConsumes('multipart/form-data')
     @GuessAddDecorator()
     @UseInterceptors(FileInterceptor('id'))
     async guessAdd(@Body() guessAddDto: GuessAddDto, @Param('id') id: number, @Req() request: Request): Promise<Guess> {
-
         try {
             const cookie = request.cookies['jwt'];
             const data = await this.jwtService.verifyAsync(cookie);
@@ -34,6 +33,10 @@ export class GuessController {
             //To do that first we need the location and the user
             const foundUser = await this.authService.findOneUserId(data.id)
             const foundLocation = await this.locationService.findOne(id)
+
+            if (foundUser.userId === foundLocation.userTk.userId) {
+                throw new BadRequestException('Cannot add a guess to your own locations');
+            }
 
             var guessed = false;
 
@@ -50,32 +53,57 @@ export class GuessController {
                 throw new BadRequestException('You have already guessed on this location')
             }
 
+            //Must rotate the inputs (WRONG ORDER) 
             await this.authService.userGuessed(foundUser, foundUser.userId, id);
 
             //Calculating the error distance:
-            const errorDistance = await this.haversineDistance(
+            const errorDistance = await this.haversineFormula(
                 foundLocation.longitude, foundLocation.latitude, guessAddDto.longitude, guessAddDto.latitude);
 
             return await this.guessService.create(guessAddDto, foundUser, foundLocation, errorDistance);
 
         } catch (e) {
-            throw new UnauthorizedException(e);
+            throw new UnauthorizedException(e.message);
+        }
+    }
+
+    @ApiOperation({ summary: 'Get the logged users guesses order by best (smallest error distance)' })
+    @ApiQuery({ name: "limit", type: String, description: "A limit parameter (Optional)", required: false })
+    @Post('/guess/personal-best')
+    async getUserGuesses(@Query('limit') limit: number, @Req() request: Request): Promise<Guess[]> {
+        try {
+            const cookie = request.cookies['jwt'];
+            const data = await this.jwtService.verifyAsync(cookie);
+
+            if (!data) {
+                throw new UnauthorizedException('You must be signed in to access this function');
+            }
+
+            //Getting the user, the on who wants his guesses  
+            const foundUser = await this.authService.findOneUserId(data.id)
+
+            return this.guessService.findAll(foundUser.userId, limit);
+
+        } catch (e) {
+            throw new UnauthorizedException(e.message);
         }
     }
 
 
-
-    haversineDistance(lat1: number, lon1: number, lat2: number, lon2: number) {
+    haversineFormula(lat1: number, lon1: number, lat2: number, lon2: number) {
         function toRad(x) {
             return x * Math.PI / 180;
         }
 
+        //First set of coordinates
         var lon1 = lon1;
         var lat1 = lat1;
 
+        //Second set of coordinates
         var lon2 = lon2;
         var lat2 = lat2;
 
+        //The earths radius 
         var R = 6371; // km
 
         var x1 = lat2 - lat1;

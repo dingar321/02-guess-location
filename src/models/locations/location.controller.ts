@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Param, Post, Query, Req, UnauthorizedException, UploadedFile, UseInterceptors } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
-import { ApiConsumes, ApiOperation, ApiTags } from "@nestjs/swagger";
+import { ApiConsumes, ApiOperation, ApiQuery, ApiTags } from "@nestjs/swagger";
 import { LocationAddDecorator } from "src/common/decorators/location-add.decorator";
 import { LocationAddDto } from "./dto/location-add.dto";
 import { LocationService } from "./location.service";
@@ -22,7 +22,6 @@ export class LocationController {
     @LocationAddDecorator()
     @UseInterceptors(FileInterceptor('locationImage'))
     async locationAdd(@Body() locationAddDto: LocationAddDto, @UploadedFile() locationImage: Express.Multer.File, @Req() request: Request): Promise<Location> {
-
         try {
             const cookie = request.cookies['jwt'];
             const data = await this.jwtService.verifyAsync(cookie);
@@ -46,9 +45,11 @@ export class LocationController {
         return await this.locationService.findRandom();
     }
 
+
     @ApiOperation({ summary: 'Get all locations/posts (Pagination)' })
-    @Get('location/list/limit=:limit')
-    async locations(@Param('limit') limit: number): Promise<Location[]> {
+    @ApiQuery({ name: "limit", type: String, description: "A limit parameter (Optional)", required: false })
+    @Get('location/list/limit=:limit?')
+    async locations(@Query('limit') limit?: number): Promise<Location[]> {
         return await this.locationService.findAll(limit);
     }
 

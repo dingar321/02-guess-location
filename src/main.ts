@@ -13,9 +13,6 @@ async function bootstrap() {
     //If enabled it will return a bad request
     forbidNonWhitelisted: true,
     transform: true,
-    transformOptions: {
-      enableImplicitConversion: true,
-    }
 
   }));
 

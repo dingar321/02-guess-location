@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import console from "console";
-import { ImageUploadeService } from "src/utils/S3Service/image-uploade.service";
+import { S3BucketService } from "src/utils/s3-bucket/s3-bucket.service";
 import { Repository } from "typeorm";
 import { User } from "../users/entities/user.entity";
 import { LocationAddDto } from "./dto/location-add.dto";
@@ -9,7 +9,7 @@ import { Location } from "./entities/location.entity";
 
 @Injectable()
 export class LocationService {
-    constructor(@InjectRepository(Location) private readonly locationRepository: Repository<Location>, private imageUploadeService: ImageUploadeService) { }
+    constructor(@InjectRepository(Location) private readonly locationRepository: Repository<Location>, private s3BucketService: S3BucketService) { }
 
     async create(locationAddDto: LocationAddDto, locationImage: Express.Multer.File, foundUser: User): Promise<Location> {
 
@@ -17,8 +17,8 @@ export class LocationService {
         var moment = require('moment')
         var timePosted = moment().format('YYYY-MM-DD HH:mm:ss')
 
-        //Getting the s3 key/data to store in the database
-        const s3Data = await this.imageUploadeService.uploadImage(locationImage);
+        //Getting the s3 key to store in the database
+        const s3Data = await this.s3BucketService.uploadImage(locationImage, 'location-images');
 
         //Creating the user with all of the properties
         const createdLocation = await this.locationRepository.create({

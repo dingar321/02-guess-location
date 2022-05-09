@@ -4,12 +4,12 @@ import { User } from "src/models/users/entities/user.entity";
 import { Repository } from "typeorm";
 import { SignUpDto } from "./dto/sign-up.dto";
 import * as bcrypt from 'bcrypt';
-import { ImageUploadeService } from "src/utils/S3Service/image-uploade.service";
+import { S3BucketService } from "src/utils/s3-bucket/s3-bucket.service";
 
 
 @Injectable()
 export class AuthService {
-    constructor(@InjectRepository(User) private readonly userRepository: Repository<User>, private imageUploadeService: ImageUploadeService) { }
+    constructor(@InjectRepository(User) private readonly userRepository: Repository<User>, private s3BucketService: S3BucketService) { }
 
     async create(signUpDto: SignUpDto, profileImage: Express.Multer.File): Promise<User> {
         //Check if user already exists with this email
@@ -22,7 +22,7 @@ export class AuthService {
         var timeRegistered = moment().format('YYYY-MM-DD HH:mm:ss')
 
         //hashing the password and getting the s3 key/data to store in the database
-        const s3Data = await this.imageUploadeService.uploadImage(profileImage);
+        const s3Data = await this.s3BucketService.uploadImage(profileImage, 'profile-images');
         const hashedPassword = await bcrypt.hash(signUpDto.password, await bcrypt.genSalt());
 
         //Creating the user with all of the properties

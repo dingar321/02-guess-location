@@ -1,5 +1,6 @@
 import { MailerModule } from "@nestjs-modules/mailer";
 import { Module } from "@nestjs/common";
+import { ConfigModule } from "@nestjs/config";
 import { JwtModule } from "@nestjs/jwt";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { AuthModule } from "src/authentication/auth.module";
@@ -11,7 +12,6 @@ import { PasswordService } from "./password.service";
 @Module({
     imports: [
         TypeOrmModule.forFeature([Password]),
-        TypeOrmModule.forFeature([User]),
         MailerModule.forRoot({
             transport: {
                 host: '0.0.0.0',

@@ -6,6 +6,7 @@ import { Guess } from "./entities/guess.entity";
 import { GuessController } from "./guess.controller";
 import { GuessService } from "./guess.service";
 import { LocationModule } from 'src/models/locations/location.module'
+import { ConfigModule } from "@nestjs/config";
 
 @Module({
     imports: [
@@ -13,7 +14,7 @@ import { LocationModule } from 'src/models/locations/location.module'
 
         JwtModule.register({
             secret: process.env.JWT_SECRET,
-            signOptions: { expiresIn: '1d' }
+            signOptions: { expiresIn: process.env.JWT_EXPIRATION_TIME }
         }),
 
         //Imported modules

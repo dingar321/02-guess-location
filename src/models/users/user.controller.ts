@@ -1,5 +1,5 @@
-import { BadRequestException, Body, Controller, Post, Req, UnauthorizedException } from "@nestjs/common";
-import { ApiOperation, ApiTags } from "@nestjs/swagger";
+import { BadRequestException, Body, Controller, Post, Req, UnauthorizedException, UploadedFile, UseInterceptors } from "@nestjs/common";
+import { ApiConsumes, ApiOperation, ApiTags } from "@nestjs/swagger";
 import { ChangePasswordDto } from "./dto/change-password.dto";
 import { Request, Response } from 'express';
 import { JwtService } from "@nestjs/jwt";
@@ -8,6 +8,9 @@ import { UserService } from "./user.service";
 import { User } from "./entities/user.entity";
 import { ChangeInformationDto } from "./dto/change-information.dto";
 import * as bcrypt from 'bcrypt';
+import { FileInterceptor } from "@nestjs/platform-express";
+import { UploadImage } from "src/utils/decorators/upload-image.decorator";
+import { profile } from "console";
 
 @ApiTags('user')
 @Controller()
@@ -19,7 +22,6 @@ export class UserController {
     async changePassword(@Body() changePasswordDto: ChangePasswordDto, @Req() request: Request): Promise<any> {
         try {
             const cookie = request.cookies['jwt'];
-
             const data = await this.jwtService.verifyAsync(cookie);
 
             if (!data) {
@@ -50,7 +52,6 @@ export class UserController {
     async changeInformation(@Body() changeInformationDto: ChangeInformationDto, @Req() request: Request): Promise<any> {
         try {
             const cookie = request.cookies['jwt'];
-
             const data = await this.jwtService.verifyAsync(cookie);
 
             if (!data) {
@@ -67,6 +68,34 @@ export class UserController {
 
         } catch (e) {
             throw new UnauthorizedException();
+        }
+    }
+
+    @ApiOperation({ summary: 'Change the logged in user profile image' })
+    @Post('user/change-profile-image')
+    @ApiConsumes('multipart/form-data')
+    @UploadImage()
+    @UseInterceptors(FileInterceptor('profileImage'))
+    async changeProfileImage(@UploadedFile() profileImage: Express.Multer.File, @Req() request: Request): Promise<any> {
+        try {
+            const cookie = request.cookies['jwt'];
+            const data = await this.jwtService.verifyAsync(cookie);
+
+            if (!data) {
+                throw new UnauthorizedException();
+            }
+
+            const foundUser = await this.authService.findOneUserId(data.id)
+
+            await this.userService.updateProfileImage(profileImage, foundUser);
+
+            return {
+                message: 'profile image changed'
+            };
+
+        } catch (e) {
+            console.log(e.message);
+            throw new UnauthorizedException(e.message);
         }
     }
 }

@@ -54,7 +54,7 @@ export class AuthController {
         response.cookie('jwt', jwt, { httpOnly: true });
 
         return {
-            message: 'success'
+            message: 'successfully signed in'
         };
     }
 
@@ -91,7 +91,7 @@ export class AuthController {
         response.clearCookie('jwt');
 
         return {
-            message: 'success'
+            message: 'successfully logged out'
         };
     }
 }

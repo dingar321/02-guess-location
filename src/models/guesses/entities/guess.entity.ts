@@ -8,21 +8,6 @@ export class Guess {
     @PrimaryGeneratedColumn({ name: 'guess_id' })
     guessId: number;
 
-    //Latitude is written before longitude
-    @Column({
-        name: 'latitude',
-        type: 'decimal',
-        nullable: false
-    })
-    latitude: number;
-
-    @Column({
-        name: 'longitude',
-        type: 'decimal',
-        nullable: false
-    })
-    longitude: number;
-
     @Column({
         name: 'error_distance_km',
         type: 'decimal',

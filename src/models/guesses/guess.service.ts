@@ -16,8 +16,6 @@ export class GuessService {
         var timePosted = moment().format('YYYY-MM-DD HH:mm:ss')
 
         const createdGuess = await this.guessRepository.create({
-            latitude: guessAddDto.latitude,
-            longitude: guessAddDto.longitude,
             errorDistanceKm: errorDistance,
             timePosted: timePosted,
             locationTk: foundLocation,

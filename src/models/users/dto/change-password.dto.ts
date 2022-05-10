@@ -11,6 +11,11 @@ export class ChangePasswordDto {
     @ApiProperty()
     @IsString()
     @IsNotEmpty()
+    passwordCurrent: string
+
+    @ApiProperty()
+    @IsString()
+    @IsNotEmpty()
     //Checks the min length of the password
     @MinLength(8)
     //Checks the min length of the password
@@ -31,4 +36,5 @@ export class ChangePasswordDto {
     //Checks if the passwords match
     @Validate(IsPassMatch, ['password'])
     passwordConfirm: string;
+
 }

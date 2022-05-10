@@ -19,7 +19,7 @@ export class LocationService {
         var timePosted = moment().format('YYYY-MM-DD HH:mm:ss')
 
         //Getting the s3 key to store in the database
-        const s3Data = await this.s3BucketService.uploadImage(locationImage, 'location-images');
+        //const s3Data = await this.s3BucketService.uploadImage(locationImage, 'location-images');
 
         //Creating the user with all of the properties
         const createdLocation = await this.locationRepository.create({
@@ -27,12 +27,22 @@ export class LocationService {
             latitude: locationAddDto.latitude,
             longitude: locationAddDto.longitude,
             timePosted: timePosted,
-            s3Imagekey: s3Data.key,
+            s3Imagekey: 'null',
             userTk: foundUser
         })
+        await this.locationRepository.save(createdLocation);
 
+        const foundLocation = await this.locationRepository.findOne({
+            relations: ['userTk'],
+            where: {
+                locationId: createdLocation.locationId
+            }
+        });
+
+        const s3Data = await this.s3BucketService.uploadImage(locationImage, foundLocation.locationId, 'locationId', foundLocation.userTk.userId);
+        foundLocation.s3Imagekey = s3Data.key;
         //Return creted location
-        return await this.locationRepository.save(createdLocation);
+        return await this.locationRepository.save(foundLocation);
     }
 
 

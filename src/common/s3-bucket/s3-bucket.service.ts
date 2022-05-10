@@ -1,6 +1,7 @@
-import AWS, { S3 } from 'aws-sdk';
+import { S3 } from 'aws-sdk';
 import { Logger, Injectable } from '@nestjs/common';
 import { S3DataDto } from './dto/s3-data.dto';
+import { Timestamp } from 'typeorm';
 
 //Add info:
 //https://dev.to/vjnvisakh/uploading-to-s3-using-nestjs-4037
@@ -9,6 +10,13 @@ import { S3DataDto } from './dto/s3-data.dto';
 //Delete info:
 //https://stackoverflow.com/questions/27753411/how-do-i-delete-an-object-on-aws-s3-using-javascript
 //https://wanago.io/2020/08/03/api-nestjs-uploading-public-files-to-amazon-s3/
+
+/*
+When sending data to the upload method we need to specify 3 parameters:
+    - The image file itself
+    - objects id
+    - name of object and 'Id' at the end of it
+*/
 
 @Injectable()
 export class S3BucketService {
@@ -21,26 +29,30 @@ export class S3BucketService {
         });
     }
 
-    async uploadImage(profileImage: Express.Multer.File, filePath: string): Promise<S3DataDto> {
+    async uploadImage(profileImage: Express.Multer.File, objectId: number, objectName: string, userId: number): Promise<S3DataDto> {
 
-        const imageName = await this.imageNameProcessor(profileImage, filePath);
+        //const imageName = await this.imageNameProcessor(profileImage, filePath);
+        const imageName = await this.pictureNamingScheme(profileImage, objectId, objectName);
+
+        var direcotry;
+        switch (objectName) {
+            case 'userId':
+                direcotry = objectName.slice(0, -2) + objectId + '/';
+                break;
+            case 'locationId':
+                direcotry = 'user' + userId + '/' + objectName.slice(0, -2) + '/';
+                break;
+        }
 
         const s3 = this.getS3();
         const params =
         {
             Bucket: process.env.AWS_PUBLIC_BUCKET_NAME,
-            Key: imageName,
+            Key: direcotry + imageName,
             Body: profileImage.buffer,
             ContentDisposition: "inline",
-            //Concent type allows the image to be viewed on the browser instead of a download
+            //Content type allows the image to be viewed on the browser instead of being downloaded
             ContentType: profileImage.mimetype,
-            /*
-            ACL: "public-read",
-            CreateBucketConfiguration:
-            {
-                LocationConstraint: process.env.AWS_REGION
-            }
-            */
         };
 
         return new Promise((resolve, reject) => {
@@ -86,6 +98,50 @@ export class S3BucketService {
 
         const finalName = filePath + '/' + imageName
         return finalName
+    }
+
+
+
+
+
+    pictureNamingScheme(profileImage: Express.Multer.File, objectId: number, objectName: string) {
+        /* 
+        The picture names contain: 
+           unixTime-randomString-userId-fileName.fileExtension 
+        */
+        var imageName;
+
+        //Unix time
+        const unixCreated = new Date().getTime()
+        //Random string (4bytes)
+        var crypto = require("crypto");
+        var randString = crypto.randomBytes(4).toString('hex');
+        //Users id
+        const object = objectName + objectId;
+        //File name
+        const { originalname } = profileImage;
+        //File extension
+        const extension = originalname.slice(-4);
+
+        imageName = + unixCreated + '-' + randString + '-' +
+            object + '-' + this.stringProcesor(originalname.slice(0, -4)) + extension;
+
+        return imageName;
+    }
+
+    stringProcesor(originialName: string) {
+        /*
+        For example, if a file "My Holiday: Florida 23.jpg"
+        It will get processed in to: my-holiday-florida-23.jpg
+        */
+        //Removes any symbol we dont want 
+        originialName = originialName.replace(/[^\wščćđž\s]/gi, '');
+        //Remove any excess spaces
+        originialName = originialName.replace(/\s+/g, ' ').trim();
+        //Replace spaces with dashes (-)
+        originialName = originialName.replace(/\s+/g, '_');
+        //Return and set all characters to lowercase
+        return originialName.toLowerCase();
     }
 
 }

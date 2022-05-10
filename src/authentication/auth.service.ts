@@ -17,12 +17,7 @@ export class AuthService {
             throw new ConflictException('User with this email already exist');
         }
 
-        //Time of registration
-        var moment = require('moment')
-        var timeRegistered = moment().format('YYYY-MM-DD HH:mm:ss')
-
-        //hashing the password and getting the s3 key/data to store in the database
-        const s3Data = await this.s3BucketService.uploadImage(profileImage, 'profile-images');
+        //hashing the password 
         const hashedPassword = await bcrypt.hash(signUpDto.password, await bcrypt.genSalt());
 
         //Creating the user with all of the properties
@@ -31,12 +26,20 @@ export class AuthService {
             firstName: signUpDto.firstName,
             lastName: signUpDto.lastName,
             password: hashedPassword,
-            timeRegistered: timeRegistered,
-            s3Imagekey: s3Data.key
+            timeRegistered: this.dateTimeNow(),
+            s3Imagekey: 'null'
         });
+        await this.userRepository.save(createdUser);
+
+        //Getting the just registered user to get his id
+        const foundUser = await this.userRepository.findOne({ email: signUpDto.email });
+        //Getting the s3 key/data to store in the database
+        const s3Data = await this.s3BucketService.uploadImage(profileImage, foundUser.userId, 'userId', foundUser.userId);
+
+        foundUser.s3Imagekey = s3Data.key;
 
         //Return creted user
-        return await this.userRepository.save(createdUser);
+        return await this.userRepository.save(foundUser);
     }
 
     async findOneUserEmail(email: string): Promise<User> {
@@ -66,4 +69,11 @@ export class AuthService {
     }
 
 
+
+    dateTimeNow() {
+        //Time of registration
+        var moment = require('moment');
+        var timeRegistered = moment().format('YYYY-MM-DD HH:mm:ss');
+        return timeRegistered;
+    }
 }

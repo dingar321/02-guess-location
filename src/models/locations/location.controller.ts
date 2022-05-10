@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Query, Req, UnauthorizedException, UploadedFile, UseInterceptors } from "@nestjs/common";
+import { BadRequestException, Body, Controller, Get, Param, Post, Query, Req, UnauthorizedException, UploadedFile, UseInterceptors } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import { ApiConsumes, ApiOperation, ApiQuery, ApiTags } from "@nestjs/swagger";
 import { LocationAddDecorator } from "src/common/decorators/location-add.decorator";
@@ -9,6 +9,7 @@ import { AuthService } from "src/authentication/auth.service";
 import { Location } from "./entities/location.entity";
 import { FileInterceptor } from "@nestjs/platform-express";
 import { PaginationQueryDto } from "src/common/dto/pagination-query.dto";
+import { error } from "console";
 
 
 @ApiTags('location')
@@ -35,7 +36,7 @@ export class LocationController {
             return await this.locationService.create(locationAddDto, locationImage, foundUser);
 
         } catch (e) {
-            throw new UnauthorizedException('You must be signed in to access this function');
+            throw new BadRequestException(e.message);
         }
     }
 

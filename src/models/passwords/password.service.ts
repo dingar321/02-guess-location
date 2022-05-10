@@ -1,8 +1,6 @@
-import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
-import { User } from "../users/entities/user.entity";
-import { ChangePasswordDto } from "../users/dto/change-password.dto";
 import { ForgotPasswordDto } from "./dto/forgot-password.dto";
 import { Password } from "./entities/password.entity";
 
@@ -13,12 +11,22 @@ export class PasswordService {
     async create(forgotPasswordDto: ForgotPasswordDto, resetToken: string) {
         return this.passwordRepository.save({
             email: forgotPasswordDto.email,
-            resetToken: resetToken
+            resetToken: resetToken,
+            tokenExpiration: this.dateTimeNow()
         })
     }
 
     async findOneResetToken(resetToken: string) {
         return this.passwordRepository.findOne({ resetToken: resetToken })
+    }
+
+
+    dateTimeNow() {
+        //Time of reset token creation
+        //Plus make the token only available for 2h
+        var myDate = new Date();
+        myDate.setHours(myDate.getHours() + 2);
+        return myDate;
     }
 
 }

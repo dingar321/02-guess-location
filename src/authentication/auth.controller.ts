@@ -37,7 +37,6 @@ export class AuthController {
     async signin(@Body() signInDto: SignInDto,
         @Res({ passthrough: true }) response: Response): Promise<any> {
         const foundUser = await this.authService.findOneUserEmail(signInDto.email);
-
         //Check if he the user exists
         if (!foundUser) {
             throw new UnauthorizedException("Credentials invalid");

@@ -7,4 +7,6 @@ export class ForgotPasswordDto {
     @IsString()
     @IsNotEmpty()
     readonly email: string;
+
+
 }

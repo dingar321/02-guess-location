@@ -17,10 +17,17 @@ export class Password {
     @Column({
         name: 'reset_token',
         type: 'varchar',
-        length: 255,
+        length: 64,
         nullable: false,
         unique: true
     })
     resetToken: string;
+
+    @Column({
+        name: 'token_expiration',
+        type: 'timestamp',
+        nullable: false,
+    })
+    tokenExpiration: Timestamp;
 
 }

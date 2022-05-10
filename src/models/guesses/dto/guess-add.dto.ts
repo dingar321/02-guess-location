@@ -15,6 +15,4 @@ export class GuessAddDto {
     @Validate(IsLongitude, ['longitude'])
     readonly longitude: number;
 
-
-
 }

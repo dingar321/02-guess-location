@@ -11,13 +11,15 @@ export class LocationAddDto {
     @ApiProperty()
     @IsString()
     @IsNotEmpty()
-    @Validate(IsLongitude, ['longitude'])
-    readonly longitude: number;
+    @Validate(IsLatitude, ['latitude'])
+    readonly latitude: number;
 
     @ApiProperty()
     @IsString()
     @IsNotEmpty()
-    @Validate(IsLatitude, ['latitude'])
-    readonly latitude: number;
+    @Validate(IsLongitude, ['longitude'])
+    readonly longitude: number;
+
+
 
 }

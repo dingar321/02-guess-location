@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Param, Post, Query, Req, UnauthorizedException, UseInterceptors } from "@nestjs/common";
+import { BadRequestException, Body, Controller, Get, Param, Post, Query, Req, UnauthorizedException, UseInterceptors } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import { FileInterceptor } from "@nestjs/platform-express";
 import { ApiConsumes, ApiOperation, ApiQuery, ApiTags } from "@nestjs/swagger";
@@ -15,12 +15,13 @@ import { GuessService } from "./guess.service";
 export class GuessController {
     constructor(private guessService: GuessService, private jwtService: JwtService, private locationService: LocationService, private authService: AuthService) { }
 
+
     @ApiOperation({ summary: 'Add a new guess for a specific location' })
-    @Post('/guess/add/:id')
     @ApiConsumes('multipart/form-data')
     @GuessAddDecorator()
-    @UseInterceptors(FileInterceptor('id'))
-    async guessAdd(@Body() guessAddDto: GuessAddDto, @Param('id') id: number, @Req() request: Request): Promise<Guess> {
+    @UseInterceptors(FileInterceptor('locationId'))
+    @Post('/guess/add/:locationId')
+    async guessAdd(@Body() guessAddDto: GuessAddDto, @Param('locationId') locationId: number, @Req() request: Request): Promise<Guess> {
         try {
             const cookie = request.cookies['jwt'];
             const data = await this.jwtService.verifyAsync(cookie);
@@ -32,7 +33,7 @@ export class GuessController {
             //Now check if the user has already guessed on this location/post
             //To do that first we need the location and the user
             const foundUser = await this.authService.findOneUserId(data.id)
-            const foundLocation = await this.locationService.findOne(id)
+            const foundLocation = await this.locationService.findOne(locationId)
 
             if (foundUser.userId === foundLocation.userTk.userId) {
                 throw new BadRequestException('Cannot add a guess to your own locations');
@@ -44,7 +45,7 @@ export class GuessController {
 
             //Then we must check if the user has already upvoted this specific quote!
             userGuesses.forEach(element => {
-                if (element === id) {
+                if (element === locationId) {
                     guessed = true;
                 }
             });
@@ -53,12 +54,14 @@ export class GuessController {
                 throw new BadRequestException('You have already guessed on this location')
             }
 
-            //Must rotate the inputs (WRONG ORDER) 
-            await this.authService.userGuessed(foundUser, foundUser.userId, id);
+            //Must rotate the inputs
+            await this.authService.userGuessed(foundUser, foundUser.userId, locationId);
 
             //Calculating the error distance:
             const errorDistance = await this.haversineFormula(
-                foundLocation.longitude, foundLocation.latitude, guessAddDto.longitude, guessAddDto.latitude);
+                foundLocation.latitude, foundLocation.longitude,
+                guessAddDto.latitude, guessAddDto.longitude
+            );
 
             return await this.guessService.create(guessAddDto, foundUser, foundLocation, errorDistance);
 
@@ -69,8 +72,8 @@ export class GuessController {
 
     @ApiOperation({ summary: 'Get the logged users guesses order by best (smallest error distance)' })
     @ApiQuery({ name: "limit", type: String, description: "A limit parameter (Optional)", required: false })
-    @Post('/guess/personal-best')
-    async getUserGuesses(@Query('limit') limit: number, @Req() request: Request): Promise<Guess[]> {
+    @Get('/guess/for-user')
+    async guessesUsers(@Query('limit') limit: number, @Req() request: Request): Promise<Guess[]> {
         try {
             const cookie = request.cookies['jwt'];
             const data = await this.jwtService.verifyAsync(cookie);
@@ -82,12 +85,26 @@ export class GuessController {
             //Getting the user, the on who wants his guesses  
             const foundUser = await this.authService.findOneUserId(data.id)
 
-            return this.guessService.findAllUsersGuesses(foundUser.userId, limit);
+            return this.guessService.findAllForUsers(foundUser.userId, limit);
 
         } catch (e) {
             throw new UnauthorizedException(e.message);
         }
     }
+
+    @ApiOperation({ summary: 'Get the locations guesses order by best (smallest error distance)' })
+    @ApiQuery({ name: "limit", type: String, description: "A limit parameter (Optional)", required: false })
+    @ApiQuery({ name: "locationId", type: String, description: "Specify which Location (Required)", required: true })
+    @Get('/guess/for-location')
+    async guessesLocation(@Query() locationId: number, limit: number): Promise<Guess[]> {
+        try {
+            return await this.guessService.fingAllForLocation(locationId, limit);
+
+        } catch (e) {
+            throw new UnauthorizedException(e.message);
+        }
+    }
+
 
 
     haversineFormula(lat1: number, lon1: number, lat2: number, lon2: number) {
@@ -96,12 +113,12 @@ export class GuessController {
         }
 
         //First set of coordinates
-        var lon1 = lon1;
         var lat1 = lat1;
+        var lon1 = lon1;
 
         //Second set of coordinates
-        var lon2 = lon2;
         var lat2 = lat2;
+        var lon2 = lon2;
 
         //The earths radius 
         var R = 6371; // km
@@ -116,6 +133,7 @@ export class GuessController {
         var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         var d = R * c;
 
-        return d;
+        //We also remove all of the decimals
+        return d >> 0;
     }
 }

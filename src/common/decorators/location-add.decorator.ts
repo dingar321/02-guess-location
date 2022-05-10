@@ -10,8 +10,8 @@ export const LocationAddDecorator = (fileName: string = 'file'): MethodDecorator
             type: 'object',
             properties: {
                 locationName: { type: 'string' },
-                longitude: { type: 'number' },
                 latitude: { type: 'number' },
+                longitude: { type: 'number' },
                 locationImage: {
                     type: 'string',
                     format: 'binary',

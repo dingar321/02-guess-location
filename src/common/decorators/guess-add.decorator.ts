@@ -9,8 +9,8 @@ export const GuessAddDecorator = (fileName: string = 'file'): MethodDecorator =>
         schema: {
             type: 'object',
             properties: {
-                longitude: { type: 'number' },
                 latitude: { type: 'number' },
+                longitude: { type: 'number' },
             },
         },
     })(target, propertyKey, descriptor);

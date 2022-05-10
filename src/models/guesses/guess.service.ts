@@ -16,9 +16,9 @@ export class GuessService {
         var timePosted = moment().format('YYYY-MM-DD HH:mm:ss')
 
         const createdGuess = await this.guessRepository.create({
-            longitude: guessAddDto.longitude,
             latitude: guessAddDto.latitude,
-            errorDistance: errorDistance,
+            longitude: guessAddDto.longitude,
+            errorDistanceKm: errorDistance,
             timePosted: timePosted,
             locationTk: foundLocation,
             userTk: foundUser
@@ -28,19 +28,35 @@ export class GuessService {
         return await this.guessRepository.save(createdGuess);
     }
 
-    async findAllUsersGuesses(userId: number, limit: number): Promise<Guess[]> {
+    async findAllForUsers(userId: number, limit: number): Promise<Guess[]> {
         const usersGuesses = await this.guessRepository.find({
             where: {
                 userTk: userId
             },
             take: limit,
             order: {
-                errorDistance: 'ASC'
+                errorDistanceKm: 'ASC'
             },
             relations: ['userTk', 'locationTk'],
         });
 
         return usersGuesses;
+    }
+
+    async fingAllForLocation(locationId: number, limit: number): Promise<Guess[]> {
+        const locationsGuesses = await this.guessRepository.find({
+            relations: ['userTk', 'locationTk'],
+            where: {
+                locationTk: locationId
+            },
+            take: limit,
+            order: {
+                errorDistanceKm: 'ASC'
+            },
+
+        });
+
+        return locationsGuesses;
     }
 
 

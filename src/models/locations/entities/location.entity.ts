@@ -4,8 +4,8 @@ import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, Timestam
 @Entity('locations')
 export class Location {
 
-    @PrimaryGeneratedColumn({ name: 'locations_id' })
-    locationsId: number;
+    @PrimaryGeneratedColumn({ name: 'location_id' })
+    locationId: number;
 
     @Column({
         name: 'location_name',
@@ -16,18 +16,19 @@ export class Location {
     locationName: string;
 
     @Column({
+        name: 'latitude',
+        type: 'decimal',
+        nullable: false
+    })
+    latitude: number;
+
+    @Column({
         name: 'longitude',
         type: 'decimal',
         nullable: false
     })
     longitude: number;
 
-    @Column({
-        name: 'latitude',
-        type: 'decimal',
-        nullable: false
-    })
-    latitude: number;
 
     @Column({
         name: 'time_posted',

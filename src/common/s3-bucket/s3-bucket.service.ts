@@ -24,7 +24,6 @@ export class S3BucketService {
     async uploadImage(profileImage: Express.Multer.File, filePath: string): Promise<S3DataDto> {
 
         const imageName = await this.imageNameProcessor(profileImage, filePath);
-        console.log(imageName);
 
         const s3 = this.getS3();
         const params =
@@ -50,7 +49,7 @@ export class S3BucketService {
                     Logger.error(error);
                     reject(error.message);
                 }
-                Logger.log('Image: ', + params.Key + 'on bucket: ', + params.Bucket + 'has sucesfully uploaded');
+                Logger.log('Image has been successfully upladed');
                 resolve(data);
             });
         });
@@ -69,7 +68,7 @@ export class S3BucketService {
             if (error) {
                 Logger.error(error);
             }
-            Logger.log('Image: ', + params.Key + 'on bucket: ', + params.Bucket + 'has sucesfully uploaded');
+            Logger.log('Image has been successfully deleted');
         });
     }
 

@@ -24,8 +24,8 @@ export class LocationService {
         //Creating the user with all of the properties
         const createdLocation = await this.locationRepository.create({
             locationName: locationAddDto.locationName,
-            longitude: locationAddDto.longitude,
             latitude: locationAddDto.latitude,
+            longitude: locationAddDto.longitude,
             timePosted: timePosted,
             s3Imagekey: s3Data.key,
             userTk: foundUser
@@ -39,7 +39,7 @@ export class LocationService {
     async findOne(locationId: number): Promise<Location> {
         return await this.locationRepository.findOne({
             where: {
-                locationsId: locationId,
+                locationId: locationId,
             },
             relations: ['userTk'],
         });
@@ -57,14 +57,13 @@ export class LocationService {
         const locations = await this.locationRepository.find({
             relations: ['userTk'],
             order: {
-                locationsId: 'DESC'
+                locationId: 'DESC'
             },
             take: limit,
         });
 
         return locations;
     }
-
 
     async findAllUsersLocations(userId: number, limit: number) {
         const usersLocations = await this.locationRepository.find({
@@ -73,11 +72,14 @@ export class LocationService {
             },
             take: limit,
             order: {
-                locationsId: 'DESC'
+                locationId: 'DESC'
             },
             relations: ['userTk'],
         });
 
         return usersLocations;
     }
+
+
+
 }

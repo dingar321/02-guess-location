@@ -17,10 +17,10 @@ export class LocationController {
     constructor(private locationService: LocationService, private jwtService: JwtService, private authService: AuthService) { }
 
     @ApiOperation({ summary: 'Add a new location' })
-    @Post('location/add')
     @ApiConsumes('multipart/form-data')
     @LocationAddDecorator()
     @UseInterceptors(FileInterceptor('locationImage'))
+    @Post('location/add')
     async locationAdd(@Body() locationAddDto: LocationAddDto, @UploadedFile() locationImage: Express.Multer.File, @Req() request: Request): Promise<Location> {
         try {
             const cookie = request.cookies['jwt'];
@@ -41,7 +41,7 @@ export class LocationController {
 
     @ApiOperation({ summary: 'Get random location/post' })
     @Get('location/random')
-    async locationRadnom(): Promise<Location> {
+    async locationRandom(): Promise<Location> {
         return await this.locationService.findRandom();
     }
 
@@ -55,7 +55,7 @@ export class LocationController {
 
     @ApiOperation({ summary: 'Get the logged users posted locations' })
     @ApiQuery({ name: "limit", type: String, description: "A limit parameter (Optional)", required: false })
-    @Post('/location/user-posted')
+    @Get('/location/user-posted')
     async locationsUserPosted(@Query('limit') limit: number, @Req() request: Request) {
         try {
             const cookie = request.cookies['jwt'];

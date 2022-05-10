@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Post, Req, UnauthorizedException, UploadedFile, UseInterceptors } from "@nestjs/common";
+import { BadRequestException, Body, Controller, Post, Put, Req, UnauthorizedException, UploadedFile, UseInterceptors } from "@nestjs/common";
 import { ApiConsumes, ApiOperation, ApiTags } from "@nestjs/swagger";
 import { ChangePasswordDto } from "./dto/change-password.dto";
 import { Request, Response } from 'express';
@@ -18,7 +18,7 @@ export class UserController {
     constructor(private jwtService: JwtService, private authService: AuthService, private userService: UserService) { }
 
     @ApiOperation({ summary: 'Change the logged in users password' })
-    @Post('user/change-password')
+    @Put('user/change-password')
     async changePassword(@Body() changePasswordDto: ChangePasswordDto, @Req() request: Request): Promise<any> {
         try {
             const cookie = request.cookies['jwt'];
@@ -48,7 +48,7 @@ export class UserController {
     }
 
     @ApiOperation({ summary: 'Change the logged in users information' })
-    @Post('user/change-information')
+    @Put('user/change-information')
     async changeInformation(@Body() changeInformationDto: ChangeInformationDto, @Req() request: Request): Promise<any> {
         try {
             const cookie = request.cookies['jwt'];
@@ -72,10 +72,10 @@ export class UserController {
     }
 
     @ApiOperation({ summary: 'Change the logged in user profile image' })
-    @Post('user/change-profile-image')
     @ApiConsumes('multipart/form-data')
     @UploadImage()
     @UseInterceptors(FileInterceptor('profileImage'))
+    @Put('user/change-profile-image')
     async changeProfileImage(@UploadedFile() profileImage: Express.Multer.File, @Req() request: Request): Promise<any> {
         try {
             const cookie = request.cookies['jwt'];

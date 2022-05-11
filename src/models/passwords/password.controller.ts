@@ -17,7 +17,7 @@ import { Timestamp } from "typeorm";
     When the user submits their emial for the email change we first check if the email exists.
     - If the email exists or not we always send the same message "Email has been sent sucesfully" ( That way we don't give attackers any indication that they should try a different email address.)
     - If the email does exist in the database, then we:
-            - create a new password reset token 
+            - create a new password reset token (64 character) string
             - store its hashed version in the database 
             - generate a password reset link that's sent to the user's email address.
     - When the user clicks the link to chagne their password their are redirected to a site with a form where they type thier new password
@@ -42,7 +42,8 @@ export class PasswordController {
             } else {
                 //This else will trigger only if the email exists in the database
                 const resetToken = await this.generateToken(64);
-                await this.passwordService.create(forgotPasswordDto, await this.tokenHashSHA256(resetToken));
+                const expirationDate = this.dateTimeNow();
+                await this.passwordService.create(forgotPasswordDto, await this.tokenHashSHA256(resetToken), expirationDate);
 
                 //Send an email
                 const url = `http://localhost:3000/reset-password?token=${resetToken}`;
@@ -50,7 +51,7 @@ export class PasswordController {
                 await this.mailerService.sendMail({
                     to: forgotPasswordDto.email,
                     subject: 'Forgotten password, reset your password',
-                    html: `Click <a href="${url}">here<a> to reset your password`
+                    html: `Click <a href="${url}">here<a> to reset your password. This link will expire in ${expirationDate}` //Get the time
                 });
 
                 return {
@@ -118,6 +119,15 @@ export class PasswordController {
         var crypto = require('crypto');
         return await crypto.createHash('sha256').update(resetToken).digest('base64')
     }
+
+    dateTimeNow() {
+        //Time of reset token creation
+        //Plus make the token only available for 2h
+        var myDate = new Date();
+        myDate.setHours(myDate.getHours() + 2);
+        return myDate;
+    }
+
 
 
 }

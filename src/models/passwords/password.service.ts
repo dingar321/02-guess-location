@@ -8,11 +8,11 @@ import { Password } from "./entities/password.entity";
 export class PasswordService {
     constructor(@InjectRepository(Password) private readonly passwordRepository: Repository<Password>) { }
 
-    async create(forgotPasswordDto: ForgotPasswordDto, resetToken: string) {
+    async create(forgotPasswordDto: ForgotPasswordDto, resetToken: string, expirationDate: Date) {
         return this.passwordRepository.save({
             email: forgotPasswordDto.email,
             resetToken: resetToken,
-            tokenExpiration: this.dateTimeNow()
+            tokenExpiration: expirationDate
         })
     }
 

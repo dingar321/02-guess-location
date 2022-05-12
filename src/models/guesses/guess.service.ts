@@ -10,7 +10,8 @@ import { Guess } from "./entities/guess.entity";
 export class GuessService {
     constructor(@InjectRepository(Guess) private readonly guessRepository: Repository<Guess>) { }
 
-    async create(guessAddDto: GuessAddDto, foundUser: User, foundLocation: Location, errorDistance: number): Promise<Guess> {
+    //#region Create guess 
+    async create(foundUser: User, foundLocation: Location, errorDistance: number): Promise<Guess> {
         //Time of posting
         var moment = require('moment')
         var timePosted = moment().format('YYYY-MM-DD HH:mm:ss')
@@ -25,7 +26,9 @@ export class GuessService {
         //Return creted guess
         return await this.guessRepository.save(createdGuess);
     }
+    //#endregion
 
+    //#region Get all guesses for user (Sort: errorDistance best first)
     async findAllForUsers(userId: number, limit: number): Promise<Guess[]> {
         const usersGuesses = await this.guessRepository.find({
             where: {
@@ -40,7 +43,9 @@ export class GuessService {
 
         return usersGuesses;
     }
+    //#endregion
 
+    //#region Get all guesses for location (Sort: errorDistance best first)
     async fingAllForLocation(locationId: number, limit: number): Promise<Guess[]> {
         const locationsGuesses = await this.guessRepository.find({
             relations: ['userTk', 'locationTk'],
@@ -56,6 +61,6 @@ export class GuessService {
 
         return locationsGuesses;
     }
-
+    //#endregion
 
 }

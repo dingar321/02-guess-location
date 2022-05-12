@@ -1,6 +1,6 @@
 import { MailerService } from "@nestjs-modules/mailer";
 import { BadRequestException, Body, Controller, NotFoundException, Post, Req, UnauthorizedException } from "@nestjs/common";
-import { ApiOperation, ApiTags } from "@nestjs/swagger";
+import { ApiBadRequestResponse, ApiOkResponse, ApiOperation, ApiTags } from "@nestjs/swagger";
 import { ForgotPasswordDto } from "./dto/forgot-password.dto";
 import { ResetPasswordDto } from "./dto/reset-password.dto";
 import { PasswordService } from "./password.service";
@@ -29,78 +29,88 @@ import { Timestamp } from "typeorm";
 export class PasswordController {
     constructor(private passwordService: PasswordService, private mailerService: MailerService, private authService: AuthService,) { }
 
-    @ApiOperation({ summary: 'Get token for a forgotten password' })
+    //#region Send reset password link & generate token
+    @ApiOperation({
+        summary: 'Get token for a forgotten password', description: `
+        Forgot password schema:
+        {
+            email*      string
+        }
+    `})
+    @ApiOkResponse({ description: 'Email has been successfully sent to the user' })
     @Post('user/forgot-password')
     async forgot(@Body() forgotPasswordDto: ForgotPasswordDto) {
-        try {
-            const foundUser = await this.authService.findOneUserEmail(forgotPasswordDto.email);
-            //Check if he the user exists
-            if (!foundUser) {
-                return {
-                    message: 'Email has been sent sucesfully'
-                };
-            } else {
-                //This else will trigger only if the email exists in the database
-                const resetToken = await this.generateToken(64);
-                const expirationDate = this.dateTimeNow();
-                await this.passwordService.create(forgotPasswordDto, await this.tokenHashSHA256(resetToken), expirationDate);
+        const foundUser = await this.authService.findOneUserEmail(forgotPasswordDto.email);
+        //Check if he the user exists
+        if (!foundUser) {
+            return {
+                message: 'Email has been successfully sent to the user'
+            };
+        } else {
+            //This else will trigger only if the email exists in the database
+            const resetToken = await this.generateToken(64);
+            const expirationDate = this.dateTimeNow();
+            await this.passwordService.create(forgotPasswordDto, await this.tokenHashSHA256(resetToken), expirationDate);
 
-                //Send an email
-                const url = `http://localhost:3000/reset-password?token=${resetToken}`;
+            //Send an email
+            const url = `http://localhost:3000/reset-password?token=${resetToken}`;
 
-                await this.mailerService.sendMail({
-                    to: forgotPasswordDto.email,
-                    subject: 'Forgotten password, reset your password',
-                    html: `Click <a href="${url}">here<a> to reset your password. This link will expire in ${expirationDate}` //Get the time
-                });
+            await this.mailerService.sendMail({
+                to: forgotPasswordDto.email,
+                subject: 'Forgotten password, reset your password',
+                html: `Click <a href="${url}">here<a> to reset your password. This link will expire in ${expirationDate}` //Get the time
+            });
 
-                return {
-                    message: 'Email has been sent sucesfully'
-                };
-            }
+            return {
+                message: 'Email has been successfully sent to the user'
+            };
         }
-        catch (e) {
-            throw new BadRequestException(e.message);
-        }
-
     }
+    //#endregion
 
-    @ApiOperation({ summary: 'Use the token to change the forgotten password' })
+    //#region Reset password using link/token
+    @ApiOperation({
+        summary: 'Use the token to change the forgotten password', description: `
+        Reset password schema:
+        {
+            resetToken*             string
+            password*               string
+            passwordConfirm*        string
+        }
+    `})
+    @ApiOkResponse({ description: 'User has successfully changed their password using the reset link' })
+    @ApiBadRequestResponse({ description: 'Values must be provided in the correct format' })
     @Post('user/reset-password')
     async reset(@Body() resetPasswordDto: ResetPasswordDto) {
-        try {
-            const foundToken = await this.passwordService.findOneResetToken(await this.tokenHashSHA256(resetPasswordDto.resetToken))
 
-            //Check if the token exists (we need to hash it so it can match the original one)
-            if (!foundToken) {
-                throw new UnauthorizedException("Token is invalid");
-            } else {
-                //then we need to check if the token has expired
-                var timeNow = new Date().valueOf()
+        const foundToken = await this.passwordService.findOneResetToken(await this.tokenHashSHA256(resetPasswordDto.resetToken))
 
-                if (timeNow < foundToken.tokenExpiration.valueOf()) {
-                    const foundUser = await this.authService.findOneUserEmail(foundToken.email);
-                    if (!foundUser) {
-                        throw new BadRequestException('Token is invalid');
-                    }
+        //Check if the token exists (we need to hash it so it can match the original one)
+        if (!foundToken) {
+            throw new UnauthorizedException("Token is invalid");
+        } else {
+            //then we need to check if the token has expired
+            var timeNow = new Date().valueOf()
 
-                    const hashedPassword = await bcrypt.hash(resetPasswordDto.password, await bcrypt.genSalt());
-
-                    await this.authService.update(foundUser.userId, { password: hashedPassword });
-
-                    return {
-                        message: 'Account password has been changed successfully'
-                    };
-                } else {
+            if (timeNow < foundToken.tokenExpiration.valueOf()) {
+                const foundUser = await this.authService.findOneUserEmail(foundToken.email);
+                if (!foundUser) {
                     throw new BadRequestException('Token is invalid');
                 }
+
+                const hashedPassword = await bcrypt.hash(resetPasswordDto.password, await bcrypt.genSalt());
+
+                await this.authService.update(foundUser.userId, { password: hashedPassword });
+
+                return {
+                    message: 'Account password has been changed successfully'
+                };
+            } else {
+                throw new BadRequestException('Token is invalid');
             }
         }
-        catch (e) {
-            throw new BadRequestException(e.message);
-        }
-
     }
+    //#endregion
 
 
     generateToken(length) {

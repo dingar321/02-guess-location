@@ -11,13 +11,14 @@ import { ChangeInformationDto } from "./dto/change-information.dto";
 export class UserService {
     constructor(@InjectRepository(User) private readonly userRepository: Repository<User>, private s3BucketService: S3BucketService) { }
 
-    //change password of the logged user
+    //#region Change authenticated users password
     async updatePassword(changePasswordDto: ChangePasswordDto, foundUser: User): Promise<User> {
         foundUser.password = await bcrypt.hash(changePasswordDto.password, await bcrypt.genSalt());
         return this.userRepository.save(foundUser);
     }
+    //#endregion
 
-    //Change information for the logged user
+    //#region Change authenticated users information
     async updateInformation(changeInformationDto: ChangeInformationDto, foundUser: User): Promise<User> {
         //Check if user already exists with this email and/or if the user set the email to the same already registered one
         if (foundUser.email !== changeInformationDto.email) {
@@ -32,8 +33,9 @@ export class UserService {
 
         return this.userRepository.save(foundUser);
     }
+    //#endregion
 
-    //Change profile image for the logged user
+    //#region Change authenticated users profile picture
     async updateProfileImage(profileImage: Express.Multer.File, foundUser: User): Promise<User> {
 
         console.log(foundUser.s3Imagekey);
@@ -46,5 +48,6 @@ export class UserService {
 
         return this.userRepository.save(foundUser);
     }
+    //#endregion
 
 }

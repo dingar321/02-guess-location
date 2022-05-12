@@ -11,6 +11,7 @@ import { S3BucketService } from "src/common/s3-bucket/s3-bucket.service";
 export class AuthService {
     constructor(@InjectRepository(User) private readonly userRepository: Repository<User>, private s3BucketService: S3BucketService) { }
 
+    //#region Create user
     async create(signUpDto: SignUpDto, profileImage: Express.Multer.File): Promise<User> {
         //Check if user already exists with this email
         if ((await this.userRepository.findOne({ email: signUpDto.email }))) {
@@ -41,21 +42,28 @@ export class AuthService {
         //Return creted user
         return await this.userRepository.save(foundUser);
     }
+    //#endregion
 
+    //#region Get user by email
     async findOneUserEmail(email: string): Promise<User> {
         return await this.userRepository.findOne({ email: email })
     }
+    //#endregion
 
+    //#region Get user by id
     async findOneUserId(id: number): Promise<User> {
         return await this.userRepository.findOne({ userId: id })
     }
+    //#endregion
 
-    //Update users password with the reset token
+    //#region Update users password with the reset token
     async update(id: number, data: any): Promise<any> {
         return await this.userRepository.update(id, data);
     }
+    //#endregion
 
-    //Record for the location, we cannot guess on a location twice
+    //#region Record for the location
+    //(Cannot guess on a location twice)
     async userGuessed(user: User, userId: number, locationId: number) {
         const userGuesses = user.guesses;
         userGuesses.push(locationId);
@@ -67,7 +75,7 @@ export class AuthService {
         });
         await this.userRepository.save(foundUser);
     }
-
+    //#endregion
 
 
     dateTimeNow() {

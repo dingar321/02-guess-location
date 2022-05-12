@@ -1,5 +1,5 @@
 import { Body, Controller, Logger, Post, Req, Res, UnauthorizedException, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
-import { ApiBearerAuth, ApiConsumes, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBadRequestResponse, ApiBearerAuth, ApiConflictResponse, ApiConsumes, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiParam, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { User } from 'src/models/users/entities/user.entity';
 import { AuthService } from './auth.service';
 import { SignInDto } from './dto/sign-in.dto';
@@ -17,7 +17,22 @@ import { JwtAuthGuard } from 'src/common/guard/jwt-auth.guard';
 export class AuthController {
     constructor(private authService: AuthService, private jwtService: JwtService) { }
 
-    @ApiOperation({ summary: 'Creating a new account' })
+    //#region ENDPOINT: auth/signup
+    @ApiOperation({
+        summary: 'Creating a new account', description: `
+        Sign up schema:
+        {
+            email*              string
+            firstName*          string
+            lastName*           string 
+            password*           string
+            passwordConfirm*    string
+            profileImage*       string($binary)
+        }
+    `})
+    @ApiCreatedResponse({ description: 'User has successfully signed up' })
+    @ApiBadRequestResponse({ description: 'User must provide values in the correct format' })
+    @ApiConflictResponse({ description: 'User with that email already exists' })
     @Post('auth/signup')
     @ApiConsumes('multipart/form-data')
     @SignUpDecorator()
@@ -32,8 +47,19 @@ export class AuthController {
 
         return createdUser;
     }
+    //#endregion
 
-    @ApiOperation({ summary: 'login if the user has an existing account' })
+    //#region ENDPOINT: auth/signin
+    @ApiOperation({
+        summary: 'login if the user has an existing account', description: `
+        Sign in schema:
+        {
+            email*          string
+            password*       string
+        }
+    `})
+    @ApiOkResponse({ description: 'User has successfully signed in' })
+    @ApiBadRequestResponse({ description: 'User must provide values in the correct format' })
     @Post('auth/signin')
     async signin(@Body() signInDto: SignInDto,
         @Res({ passthrough: true }) response: Response): Promise<any> {
@@ -57,13 +83,19 @@ export class AuthController {
             message: 'successfully signed in'
         };
     }
+    //#endregion
 
+    //#region ENDPOINT: auth/user
     @UseGuards(JwtAuthGuard)
-    @ApiOperation({ summary: 'Getting the logged in user' })
+    @ApiOperation({
+        summary: 'Getting the logged in user (Protected)', description: `
+    ` })
+    @ApiOkResponse({ description: 'User has been successfully returned' })
+    @ApiUnauthorizedResponse({ description: 'User must be authenticated to access this function' })
     @Post('auth/user')
-    async user(@Req() req) {
-
-        const data = await this.jwtService.verifyAsync(req.cookies['jwt']);
+    async user(@Req() request) {
+        //Gett logged users information
+        const data = await this.jwtService.verifyAsync(request.cookies['jwt']);
         const foundUser = await this.authService.findOneUserId(data.id);
 
         //Remove password before returning user
@@ -71,8 +103,15 @@ export class AuthController {
 
         return result;
     }
+    //#endregion
 
-    @ApiOperation({ summary: 'Logout if user is logged in' })
+    //#region ENDPOINT: auth/logout
+    @UseGuards(JwtAuthGuard)
+    @ApiOperation({
+        summary: 'Logout if user is logged in (Protected)', description: `
+    ` })
+    @ApiOkResponse({ description: 'User has been successfully logged out' })
+    @ApiUnauthorizedResponse({ description: 'User must be authenticated to access this function' })
     @Post('auth/logout')
     async logout(@Res({ passthrough: true }) response: Response) {
         response.clearCookie('jwt');
@@ -81,6 +120,7 @@ export class AuthController {
             message: 'successfully logged out'
         };
     }
+    //#endregion
 }
 
 

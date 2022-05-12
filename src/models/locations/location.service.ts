@@ -12,6 +12,7 @@ import { Location } from "./entities/location.entity";
 export class LocationService {
     constructor(@InjectRepository(Location) private readonly locationRepository: Repository<Location>, private s3BucketService: S3BucketService) { }
 
+    //#region Create location
     async create(locationAddDto: LocationAddDto, locationImage: Express.Multer.File, foundUser: User): Promise<Location> {
 
         //Time of posting
@@ -44,8 +45,9 @@ export class LocationService {
         //Return creted location
         return await this.locationRepository.save(foundLocation);
     }
+    //#endregion
 
-
+    //#region Get locaion by id
     async findOne(locationId: number): Promise<Location> {
         return await this.locationRepository.findOne({
             where: {
@@ -54,7 +56,9 @@ export class LocationService {
             relations: ['userTk'],
         });
     }
+    //#endregion
 
+    //#region Get random location
     async findRandom(): Promise<Location> {
         const locationArray = await this.locationRepository.find({
             relations: ['userTk'],
@@ -62,7 +66,9 @@ export class LocationService {
 
         return locationArray[Math.floor(Math.random() * locationArray.length)];
     }
+    //#endregion
 
+    //#region Get all locations (Sort: newest first)
     async findAll(limit: number): Promise<Location[]> {
         const locations = await this.locationRepository.find({
             relations: ['userTk'],
@@ -74,7 +80,9 @@ export class LocationService {
 
         return locations;
     }
+    //#endregion
 
+    //#region Get all locations for user (Sort: newest first)
     async findAllUsersLocations(userId: number, limit: number) {
         const usersLocations = await this.locationRepository.find({
             where: {
@@ -89,7 +97,6 @@ export class LocationService {
 
         return usersLocations;
     }
-
-
+    //#endregion
 
 }

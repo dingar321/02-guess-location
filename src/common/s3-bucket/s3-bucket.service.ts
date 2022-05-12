@@ -65,7 +65,7 @@ export class S3BucketService {
                     this.logger.color('red').error(error);
                     reject(error.message);
                 }
-                this.logger.color('blue').success("Image: " + imageName + "Successfully uploaded")
+                this.logger.color('blue').success("Image: " + imageName + " successfully uploaded")
                 resolve(data);
             });
         });
@@ -73,6 +73,7 @@ export class S3BucketService {
 
     async deleteImage(Key: string) {
 
+        var fileName = Key.split("/");
         const s3 = this.getS3();
         var params =
         {
@@ -84,7 +85,7 @@ export class S3BucketService {
             if (error) {
                 this.logger.color('red').error(error);
             }
-            this.logger.color('blue').success("Image: " + params.Key + "Successfully deleted")
+            this.logger.color('blue').success("Image: " + fileName[fileName.length - 1] + " successfully deleted")
         });
     }
 
@@ -105,8 +106,12 @@ export class S3BucketService {
     }
 
 
+    getPictureExtension(profileImage: Express.Multer.File) {
+        const { originalname } = profileImage;
 
-
+        var fileExtension = originalname.split(".");
+        return '.' + fileExtension[fileExtension.length - 1]
+    }
 
     pictureNamingScheme(profileImage: Express.Multer.File, objectId: number, objectName: string) {
         /* 
@@ -125,7 +130,7 @@ export class S3BucketService {
         //File name
         const { originalname } = profileImage;
         //File extension
-        const extension = originalname.slice(-4);
+        const extension = this.getPictureExtension(profileImage);
 
         imageName = + unixCreated + '-' + randString + '-' +
             object + '-' + this.stringProcesor(originalname.slice(0, -4)) + extension;

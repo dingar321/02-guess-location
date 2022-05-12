@@ -53,11 +53,16 @@ export class PasswordService {
         });
 
         //Create object and save it to the database
-        return this.passwordRepository.save({
+        await this.passwordRepository.save({
             email: forgotPasswordDto.email,
             resetToken: hashedToken,
             tokenExpiration: expirationDate
         })
+
+        this.logger.color('blue').success("User: " + forgotPasswordDto.email + " exists, responded accordingly");
+        return {
+            message: 'Email has been successfully sent to the user'
+        };
     }
     //#endregion
 
@@ -72,6 +77,9 @@ export class PasswordService {
             throw new UnauthorizedException("Token is invalid");
         }
 
+        //Get the user that we want to change the password
+        const foundUser = await this.authService.findOneUserEmail(foundToken.email);
+
         //We need to check if the token has expired
         var timeNow = new Date().valueOf()
         if (timeNow > foundToken.tokenExpiration.valueOf()) {
@@ -79,13 +87,23 @@ export class PasswordService {
             throw new BadRequestException('Token is invalid');
         }
 
-        //Get the user that we want to change the password
-        const foundUser = await this.authService.findOneUserEmail(foundToken.email);
+        //Checks if new and old password are the same
+        const isMatchNew = await bcrypt.compare(resetPasswordDto.password, foundUser.password);
+        if (isMatchNew) {
+            this.logger.color('red').error("New password cannot be the same as the old password");
+            throw new BadRequestException('New password cannot be the same as the old password')
+        }
+
+
         //Hash the new password
         const hashedPassword = await bcrypt.hash(resetPasswordDto.password, await bcrypt.genSalt());
 
+        await this.authService.update(foundUser.userId, { password: hashedPassword });
+
         this.logger.color('blue').success("Password has been successfully changed for user: " + foundToken.email);
-        return await this.authService.update(foundUser.userId, { password: hashedPassword });
+        return {
+            message: 'Account password has been changed successfully'
+        };
     }
     //#endregion
 

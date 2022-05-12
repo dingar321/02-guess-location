@@ -89,6 +89,10 @@ export class GuessService {
             relations: ['userTk', 'locationTk'],
         });
 
+        usersGuesses.forEach(element => {
+            delete element.userTk.password
+        });
+
         this.logger.color('blue').success("All guesses of user: " + foundUser.userId + " returned");
         return usersGuesses;
     }
@@ -106,6 +110,10 @@ export class GuessService {
                 errorDistanceKm: 'ASC'
             },
 
+        });
+
+        locationsGuesses.forEach(element => {
+            delete element.userTk.password
         });
 
         this.logger.color('blue').success("All guesses of location: " + locationId + " returned");

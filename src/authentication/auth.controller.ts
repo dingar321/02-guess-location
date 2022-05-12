@@ -33,9 +33,8 @@ export class AuthController {
     @ApiOkResponse({ description: 'User has successfully signed in' })
     @ApiBadRequestResponse({ description: 'User must provide values in the correct format' })
     @Post('auth/signin')
-    async signin(@Body() signInDto: SignInDto,
-        @Res({ passthrough: true }) response: Response) {
-        await this.signin(signInDto, response);
+    async signin(@Body() signInDto: SignInDto, @Res({ passthrough: true }) response: Response) {
+        return await this.authService.signin(signInDto, response);
     }
     //#endregion
 

@@ -63,13 +63,16 @@ export class LocationService {
     //#endregion
 
     //#region Get random location
-    async findRandom(): Promise<Location> {
+    async findRandom() {
         const locationArray = await this.locationRepository.find({
             relations: ['userTk'],
         });
 
+        const randomLocation = locationArray[Math.floor(Math.random() * locationArray.length)];
+        delete randomLocation.userTk.password;
+
         this.logger.color('blue').success("Random location returned");
-        return locationArray[Math.floor(Math.random() * locationArray.length)];
+        return randomLocation;
     }
     //#endregion
 
@@ -82,6 +85,11 @@ export class LocationService {
             },
             take: limit,
         });
+
+        locations.forEach(element => {
+            delete element.userTk.password
+        });
+
         this.logger.color('blue').success("All locations have been returned and sorted by newest");
         return locations;
     }
@@ -102,6 +110,10 @@ export class LocationService {
                 locationId: 'DESC'
             },
             relations: ['userTk'],
+        });
+
+        usersLocations.forEach(element => {
+            delete element.userTk.password
         });
 
         this.logger.color('blue').success("All location for user: " + foundUser.email + " returned");

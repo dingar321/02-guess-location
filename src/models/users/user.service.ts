@@ -39,7 +39,7 @@ export class UserService {
         foundUser.password = await bcrypt.hash(changePasswordDto.password, await bcrypt.genSalt());
         //Remove password before returning user
         const { password, ...result } = foundUser;
-        this.logger.color('blue').success("Password changed successfully for user: " + foundUser.email);
+        this.logger.color('blue').success("Password changed for user: " + foundUser.email + " successful");
         return this.userRepository.save(result);
     }
     //#endregion
@@ -66,8 +66,8 @@ export class UserService {
         //Remove password before returning user
         const { password, ...result } = foundUser;
 
-        this.logger.color('blue').success("Information changed successfully for user: " + foundUser.email);
-        return this.userRepository.save(foundUser);
+        this.logger.color('blue').success("Information changed for user: " + foundUser.email + " successful");
+        return this.userRepository.save(result);
     }
     //#endregion
 
@@ -87,8 +87,8 @@ export class UserService {
         //Remove password before returning user
         const { password, ...result } = foundUser;
 
-        this.logger.color('blue').success("Profile image changed successfully for user: " + foundUser.email);
-        return this.userRepository.save(foundUser);
+        this.logger.color('blue').success("Profile picture changed for user: " + foundUser.email + " successful");
+        return this.userRepository.save(result);
     }
     //#endregion
 }

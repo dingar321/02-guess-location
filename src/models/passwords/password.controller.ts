@@ -22,31 +22,19 @@ export class PasswordController {
     @ApiOkResponse({ description: 'Email has been successfully sent to the user' })
     @Post('user/forgot-password')
     async forgot(@Body() forgotPasswordDto: ForgotPasswordDto) {
-        await this.passwordService.create(forgotPasswordDto);
-        return {
-            message: 'Email has been successfully sent to the user'
-        };
+        return await this.passwordService.create(forgotPasswordDto);
+
     }
     //#endregion
 
     //#region Reset password using link/token
-    @ApiOperation({
-        summary: 'Use the token to change the forgotten password', description: `
-        Reset password schema:
-        {
-            resetToken*             string
-            password*               string
-            passwordConfirm*        string
-        }
-    `})
+    @ApiOperation({ summary: 'Use the token to change the forgotten password' })
     @ApiOkResponse({ description: 'User has successfully changed their password using the reset link' })
     @ApiBadRequestResponse({ description: 'Values must be provided in the correct format' })
     @Post('user/reset-password')
     async reset(@Body() resetPasswordDto: ResetPasswordDto) {
-        await this.passwordService.resetPassword(resetPasswordDto)
-        return {
-            message: 'Account password has been changed successfully'
-        };
+        return await this.passwordService.resetPassword(resetPasswordDto)
+
     }
     //#endregion
 

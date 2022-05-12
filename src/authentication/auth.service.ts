@@ -58,7 +58,7 @@ export class AuthService {
 
     //#region User login
     async signin(signInDto: SignInDto, response: any) {
-        const foundUser = await this.userRepository.findOne(signInDto.email);
+        const foundUser = await this.userRepository.findOne({ email: signInDto.email });
         //Check if he the user exists
         if (!foundUser) {
             this.logger.color('red').error("Credentials invalid, wrong email")

@@ -25,7 +25,7 @@ export class UserController {
     @ApiBadRequestResponse({ description: 'User must provide values in the correct format' })
     @ApiUnauthorizedResponse({ description: 'User must be authenticated to access this function' })
     @Put('user/change-password')
-    async changePassword(@Body() changePasswordDto: ChangePasswordDto, @Req() request): Promise<any> {
+    async changePassword(@Body() changePasswordDto: ChangePasswordDto, @Req() request) {
         await this.userService.updatePassword(changePasswordDto, request);
         return {
             message: 'Password changed successfully'
@@ -40,7 +40,7 @@ export class UserController {
     @ApiBadRequestResponse({ description: 'User must provide values in the correct format' })
     @ApiUnauthorizedResponse({ description: 'User must be authenticated to access this function' })
     @Put('user/change-information')
-    async changeInformation(@Body() changeInformationDto: ChangeInformationDto, @Req() request): Promise<any> {
+    async changeInformation(@Body() changeInformationDto: ChangeInformationDto, @Req() request) {
         return await this.userService.updateInformation(changeInformationDto, request);
     }
     //#endregion
@@ -55,7 +55,7 @@ export class UserController {
     @UploadImage()
     @UseInterceptors(FileInterceptor('profileImage'))
     @Put('user/change-profile-image')
-    async changeProfileImage(@UploadedFile() profileImage: Express.Multer.File, @Req() request): Promise<any> {
+    async changeProfileImage(@UploadedFile() profileImage: Express.Multer.File, @Req() request) {
         return await this.userService.updateProfileImage(profileImage, request);
     }
     //#endregion

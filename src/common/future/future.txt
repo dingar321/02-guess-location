@@ -1,3 +1,0 @@
-- When chainging email, we also get a token and must verify the email !
-- New service/file for datetime
-- New service/file for calculating error distance

@@ -1,5 +1,5 @@
-import { Body, Controller, Post, Req, Res, UnauthorizedException, UploadedFile, UseInterceptors } from '@nestjs/common';
-import { ApiConsumes, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { Body, Controller, Logger, Post, Req, Res, UnauthorizedException, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
+import { ApiBearerAuth, ApiConsumes, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { User } from 'src/models/users/entities/user.entity';
 import { AuthService } from './auth.service';
 import { SignInDto } from './dto/sign-in.dto';
@@ -9,7 +9,8 @@ import { JwtService } from "@nestjs/jwt";
 import { Request, Response } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express/multer';
 import { SignUpDecorator } from 'src/common/decorators/sign-up.decorator';
-
+import { AuthGuard } from "@nestjs/passport";
+import { JwtAuthGuard } from 'src/common/guard/jwt-auth.guard';
 
 @ApiTags('auth')
 @Controller()
@@ -57,31 +58,18 @@ export class AuthController {
         };
     }
 
+    @UseGuards(JwtAuthGuard)
     @ApiOperation({ summary: 'Getting the logged in user' })
     @Post('auth/user')
-    async user(@Req() request: Request) {
+    async user(@Req() req) {
 
+        const data = await this.jwtService.verifyAsync(req.cookies['jwt']);
+        const foundUser = await this.authService.findOneUserId(data.id);
 
-        try {
-            const cookie = request.cookies['jwt'];
+        //Remove password before returning user
+        const { password, ...result } = foundUser;
 
-            const data = await this.jwtService.verifyAsync(cookie);
-
-            if (!data) {
-                throw new UnauthorizedException();
-            }
-
-            const foundUser = await this.authService.findOneUserId(data.id)
-
-            //Remove password before returning user
-            const { password, ...result } = foundUser;
-
-            return result;
-
-        } catch (e) {
-            throw new UnauthorizedException();
-        }
-
+        return result;
     }
 
     @ApiOperation({ summary: 'Logout if user is logged in' })

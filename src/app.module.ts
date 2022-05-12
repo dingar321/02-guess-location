@@ -10,6 +10,7 @@ import { Password } from './models/passwords/entities/password.entity';
 import { PasswordModule } from './models/passwords/password.module';
 import { User } from './models/users/entities/user.entity';
 import { UserModule } from './models/users/user.module';
+import { PassportModule } from "@nestjs/passport";
 
 @Module({
   imports: [
@@ -37,7 +38,7 @@ import { UserModule } from './models/users/user.module';
     //My modules
     AuthModule, UserModule,
     PasswordModule, LocationModule,
-    GuessModule,
+    GuessModule, PassportModule
   ],
   controllers: [],
   providers: [],

@@ -21,15 +21,6 @@ async function bootstrap() {
     .setTitle('Geotagger')
     .setDescription('The second project in the "SkillUp Mentor" program called: 02-guess-locations. User can signup and add locations where they ')
     .setVersion('WIP')
-    .addBearerAuth({
-      type: 'http',
-      scheme: 'bearer',
-      bearerFormat: 'JWT',
-      name: 'JWT',
-      description: 'Enter JWT token',
-      in: 'header',
-    },
-      'jwtToken')
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('/', app, document);

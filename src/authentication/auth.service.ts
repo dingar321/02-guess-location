@@ -1,20 +1,26 @@
-import { ConflictException, Injectable } from "@nestjs/common";
+import { ConflictException, Injectable, Logger, UnauthorizedException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { User } from "src/models/users/entities/user.entity";
 import { Repository } from "typeorm";
 import { SignUpDto } from "./dto/sign-up.dto";
 import * as bcrypt from 'bcrypt';
 import { S3BucketService } from "src/common/s3-bucket/s3-bucket.service";
+import { SignInDto } from "./dto/sign-in.dto";
+import { JwtService } from "@nestjs/jwt";
 
 
 @Injectable()
 export class AuthService {
-    constructor(@InjectRepository(User) private readonly userRepository: Repository<User>, private s3BucketService: S3BucketService) { }
+    logger: any;
+    constructor(@InjectRepository(User) private readonly userRepository: Repository<User>, private jwtService: JwtService, private s3BucketService: S3BucketService) {
+        this.logger = require('node-color-log');
+    }
 
     //#region Create user
-    async create(signUpDto: SignUpDto, profileImage: Express.Multer.File): Promise<User> {
+    async create(signUpDto: SignUpDto, profileImage: Express.Multer.File) {
         //Check if user already exists with this email
         if ((await this.userRepository.findOne({ email: signUpDto.email }))) {
+            this.logger.color('red').error("User with this email already exist")
             throw new ConflictException('User with this email already exist');
         }
 
@@ -39,25 +45,85 @@ export class AuthService {
 
         foundUser.s3Imagekey = s3Data.key;
 
-        //Return creted user
-        return await this.userRepository.save(foundUser);
+        //Remove password before returning user
+        const { password, ...result } = foundUser;
+
+        //Return creted user and log
+        this.logger.color('blue').success("User " + signUpDto.email + " Signed up")
+        return {
+            message: 'successfully signed up'
+        };
     }
     //#endregion
 
+    //#region User login
+    async signin(signInDto: SignInDto, response: any) {
+        const foundUser = await this.userRepository.findOne(signInDto.email);
+        //Check if he the user exists
+        if (!foundUser) {
+            this.logger.color('red').error("Credentials invalid, wrong email")
+            throw new UnauthorizedException("Credentials invalid");
+        }
+
+        //Compare passwords if they match
+        if (!await bcrypt.compare(signInDto.password, foundUser.password)) {
+            this.logger.color('red').error("Credentials invalid, wrong password")
+            throw new UnauthorizedException("Credentials invalid");
+        }
+
+        //Create a JWT HttpOnly cookie 
+        const jwt = await this.jwtService.signAsync({ id: foundUser.userId });
+        response.cookie('jwt', jwt, { httpOnly: true });
+
+        this.logger.color('blue').success("User " + signInDto.email + " signed in")
+        return {
+            message: 'successfully signed in'
+        };
+    }
+    //#endregion
+
+    //#region Get user with cookie
+    async findUser(request: any) {
+        //Gett logged users information
+        const data = await this.jwtService.verifyAsync(request.cookies['jwt']);
+        const foundUser = await this.userRepository.findOne({ userId: data.id })
+
+        //Remove password before returning user
+        const { password, ...result } = foundUser;
+
+        this.logger.color('blue').success("User " + foundUser.email + " found")
+        return result;
+    }
+    //#endregion
+
+    //#region User logout
+    async logout(response: any) {
+        response.clearCookie('jwt');
+        this.logger.color('blue').success("User successfully logged out")
+        return {
+            message: 'successfully logged out'
+        };
+    }
+    //#endregion
+
+
+    //Move these bottom ones
+
     //#region Get user by email
-    async findOneUserEmail(email: string): Promise<User> {
+    async findOneUserEmail(email: string) {
+
         return await this.userRepository.findOne({ email: email })
     }
     //#endregion
 
     //#region Get user by id
-    async findOneUserId(id: number): Promise<User> {
+    async findOneUserId(id: number) {
         return await this.userRepository.findOne({ userId: id })
     }
     //#endregion
 
     //#region Update users password with the reset token
-    async update(id: number, data: any): Promise<any> {
+    async update(id: number, data: any) {
         return await this.userRepository.update(id, data);
     }
     //#endregion

@@ -16,42 +16,17 @@ import { JwtAuthGuard } from "src/common/guard/jwt-auth.guard";
 @ApiTags('user')
 @Controller()
 export class UserController {
-    constructor(private jwtService: JwtService, private authService: AuthService, private userService: UserService) { }
+    constructor(private userService: UserService) { }
 
     //#region ENDPOINT: user/change-password
     @UseGuards(JwtAuthGuard)
-    @ApiOperation({
-        summary: 'Change the logged in users password (Protected)', description: `
-        Change password schema:
-        {
-            passwordCurrent*        string
-            password*               string
-            passwordConfirm*        string
-        }
-    `})
+    @ApiOperation({ summary: 'Change the logged in users password (Protected)' })
     @ApiOkResponse({ description: 'User has successfully changed their password' })
     @ApiBadRequestResponse({ description: 'User must provide values in the correct format' })
     @ApiUnauthorizedResponse({ description: 'User must be authenticated to access this function' })
     @Put('user/change-password')
     async changePassword(@Body() changePasswordDto: ChangePasswordDto, @Req() request): Promise<any> {
-        //Gett logged users information
-        const data = await this.jwtService.verifyAsync(request.cookies['jwt']);
-        const foundUser = await this.authService.findOneUserId(data.id);
-
-        //Check if the current typed password is correct as the one saved in the database dor the user 
-        const isMatchCurrent = await bcrypt.compare(changePasswordDto.passwordCurrent, foundUser.password);
-        if (!isMatchCurrent) {
-            throw new BadRequestException('Password is incorrect, please try again')
-        }
-
-        const isMatchNew = await bcrypt.compare(changePasswordDto.password, foundUser.password);
-        //Checks if new and old password are the same
-        if (isMatchNew) {
-            throw new BadRequestException('New password cannot be the same as the old password ')
-        }
-
-        await this.userService.updatePassword(changePasswordDto, foundUser);
-
+        await this.userService.updatePassword(changePasswordDto, request);
         return {
             message: 'Password changed successfully'
         };
@@ -60,42 +35,19 @@ export class UserController {
 
     //#region ENDPOINT: user/change-information
     @UseGuards(JwtAuthGuard)
-    @ApiOperation({
-        summary: 'Change the logged in users information (Protected)', description: `
-        Change informaton schema:
-        {
-            email*          string
-            firstName*      string
-            lastName*       string
-        }
-    `})
+    @ApiOperation({ summary: 'Change the logged in users information (Protected)' })
     @ApiOkResponse({ description: 'User has successfully changed their information' })
     @ApiBadRequestResponse({ description: 'User must provide values in the correct format' })
     @ApiUnauthorizedResponse({ description: 'User must be authenticated to access this function' })
     @Put('user/change-information')
     async changeInformation(@Body() changeInformationDto: ChangeInformationDto, @Req() request): Promise<any> {
-        //Gett logged users information
-        const data = await this.jwtService.verifyAsync(request.cookies['jwt']);
-        const foundUser = await this.authService.findOneUserId(data.id);
-
-        await this.userService.updateInformation(changeInformationDto, foundUser);
-
-        return {
-            message: 'Information changed successfully'
-        };
-
+        return await this.userService.updateInformation(changeInformationDto, request);
     }
     //#endregion
 
     //#region ENDPOINT: user/change-profile-image
     @UseGuards(JwtAuthGuard)
-    @ApiOperation({
-        summary: 'Change the logged in user profile image (Protected)', description: `
-        Change profile picture schema:
-        {
-            profileImage*      string($binary)
-        }
-    `})
+    @ApiOperation({ summary: 'Change the logged in user profile image (Protected)' })
     @ApiOkResponse({ description: 'User has successfully changed their profile picture  ' })
     @ApiBadRequestResponse({ description: 'User must provide values in the correct format' })
     @ApiUnauthorizedResponse({ description: 'User must be authenticated to access this function' })
@@ -104,15 +56,7 @@ export class UserController {
     @UseInterceptors(FileInterceptor('profileImage'))
     @Put('user/change-profile-image')
     async changeProfileImage(@UploadedFile() profileImage: Express.Multer.File, @Req() request): Promise<any> {
-        //Gett logged users information
-        const data = await this.jwtService.verifyAsync(request.cookies['jwt']);
-        const foundUser = await this.authService.findOneUserId(data.id);
-
-        await this.userService.updateProfileImage(profileImage, foundUser);
-
-        return {
-            message: 'Profile image changed successfully'
-        };
+        return await this.userService.updateProfileImage(profileImage, request);
     }
     //#endregion
 

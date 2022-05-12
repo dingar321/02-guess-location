@@ -1,3 +1,4 @@
+import { ApiProperty } from "@nestjs/swagger";
 import { IsNotEmpty, IsString, MaxLength, MinLength, Validate } from "class-validator";
 import { IsPassMatch } from "src/common/validators/pass-confirm.validator";
 import { IsOneLowerChar } from "src/common/validators/pass-lower-character.validator";
@@ -7,10 +8,12 @@ import { IsOneUpperChar } from "src/common/validators/pass-upper-character.valid
 
 export class ChangePasswordDto {
 
+    @ApiProperty()
     @IsString()
     @IsNotEmpty()
     passwordCurrent: string
 
+    @ApiProperty()
     @IsString()
     @IsNotEmpty()
     //Checks the min length of the password
@@ -27,6 +30,7 @@ export class ChangePasswordDto {
     @Validate(IsOneSpecialChar, ['password'])
     password: string;
 
+    @ApiProperty()
     @IsString()
     @IsNotEmpty()
     //Checks if the passwords match

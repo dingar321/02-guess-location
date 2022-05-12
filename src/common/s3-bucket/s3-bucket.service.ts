@@ -20,6 +20,11 @@ When sending data to the upload method we need to specify 3 parameters:
 
 @Injectable()
 export class S3BucketService {
+    logger: any;
+    constructor() {
+        this.logger = require('node-color-log');
+    }
+
 
     getS3() {
         return new S3({
@@ -51,17 +56,16 @@ export class S3BucketService {
             Key: direcotry + imageName,
             Body: profileImage.buffer,
             ContentDisposition: "inline",
-            //Content type allows the image to be viewed on the browser instead of being downloaded
             ContentType: profileImage.mimetype,
         };
 
         return new Promise((resolve, reject) => {
             s3.upload(params, (error, data) => {
                 if (error) {
-                    Logger.error(error);
+                    this.logger.color('red').error(error);
                     reject(error.message);
                 }
-                Logger.log('Image has been successfully upladed');
+                this.logger.color('blue').success("Image: " + imageName + "Successfully uploaded")
                 resolve(data);
             });
         });
@@ -78,9 +82,9 @@ export class S3BucketService {
 
         s3.deleteObject(params, (error, data) => {
             if (error) {
-                Logger.error(error);
+                this.logger.color('red').error(error);
             }
-            Logger.log('Image has been successfully deleted');
+            this.logger.color('blue').success("Image: " + params.Key + "Successfully deleted")
         });
     }
 

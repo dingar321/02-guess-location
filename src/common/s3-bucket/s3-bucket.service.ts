@@ -2,6 +2,7 @@ import { S3 } from 'aws-sdk';
 import { Logger, Injectable } from '@nestjs/common';
 import { S3DataDto } from './dto/s3-data.dto';
 import { Timestamp } from 'typeorm';
+import { Response } from 'express';
 
 //Add info:
 //https://dev.to/vjnvisakh/uploading-to-s3-using-nestjs-4037
@@ -34,9 +35,9 @@ export class S3BucketService {
         });
     }
 
-    async uploadImage(profileImage: Express.Multer.File, objectId: number, objectName: string, userId: number): Promise<S3DataDto> {
+    //#region Uploading the provided picture to the AWS S3 Bucket 
+    async uploadImage(profileImage: Express.Multer.File, objectId: number, objectName: string, userId: number): Promise<string> {
 
-        //const imageName = await this.imageNameProcessor(profileImage, filePath);
         const imageName = await this.pictureNamingScheme(profileImage, objectId, objectName);
 
         var direcotry;
@@ -57,7 +58,7 @@ export class S3BucketService {
             Body: profileImage.buffer,
             ContentDisposition: "inline",
             ContentType: profileImage.mimetype,
-        };
+        };  
 
         return new Promise((resolve, reject) => {
             s3.upload(params, (error, data) => {
@@ -65,15 +66,16 @@ export class S3BucketService {
                     this.logger.color('red').error(error);
                     reject(error.message);
                 }
-                this.logger.color('blue').success("Image: " + imageName + " successfully uploaded")
-                resolve(data);
+                this.logger.color('blue').success("Image: " + imageName + " successfully uploaded");
+                resolve(data.Key);
             });
         });
     }
+    //#endregion
 
+    //#region Deleting the specified image from the AWS S3 Bucket
     async deleteImage(Key: string) {
 
-        var fileName = Key.split("/");
         const s3 = this.getS3();
         var params =
         {
@@ -84,27 +86,35 @@ export class S3BucketService {
         s3.deleteObject(params, (error, data) => {
             if (error) {
                 this.logger.color('red').error(error);
+            } else {
+                this.logger.color('blue').success("Image: " + data + " successfully deleted");
             }
-            this.logger.color('blue').success("Image: " + fileName[fileName.length - 1] + " successfully deleted")
         });
     }
+    //#endregion
 
+    //#region Getting the URL of a specified image form the AWS S3 Bucket
+    async getImage(Key: string): Promise<string> {
+        const s3 = this.getS3();
+        var params =
+        {
+            Bucket: process.env.AWS_PUBLIC_BUCKET_NAME,
+            Key: Key,
+        };
 
-    imageNameProcessor(profileImage: Express.Multer.File, filePath: string) {
-        //Get the file name
-        const { originalname } = profileImage;
-
-        //Adding unix time created infront of the name
-        //For images that may have the same name
-        //Removes the paranthases if the file is a copy
-        const unixCreated = new Date().getTime()
-        var imageName = unixCreated + originalname.replace(/\s/g, "");
-        imageName = imageName.replace(/ *\([^)]*\) */g, "");
-
-        const finalName = filePath + '/' + imageName
-        return finalName
+        //Returning the url to the image
+        return await new Promise((resolve, reject) => {
+            s3.getSignedUrl('getObject', params, function (error, data) {
+                if (error) {
+                    this.logger.color('red').error(error);
+                    reject(error.message);
+                }
+                //this.logger.color('blue').success("Image: " + data + " successfully retrieved");
+                resolve(data);
+            });
+        });
     }
-
+    //#endregion
 
     getPictureExtension(profileImage: Express.Multer.File) {
         const { originalname } = profileImage;
@@ -124,7 +134,7 @@ export class S3BucketService {
         const unixCreated = new Date().getTime()
         //Random string (4bytes)
         var crypto = require("crypto");
-        var randString = crypto.randomBytes(4).toString('hex');
+        //var randString = crypto.randomBytes(4).toString('hex');
         //Users id
         const object = objectName + objectId;
         //File name
@@ -132,7 +142,7 @@ export class S3BucketService {
         //File extension
         const extension = this.getPictureExtension(profileImage);
 
-        imageName = + unixCreated + '-' + randString + '-' +
+        imageName = + unixCreated + '-' +
             object + '-' + this.stringProcesor(originalname.slice(0, -4)) + extension;
 
         return imageName;

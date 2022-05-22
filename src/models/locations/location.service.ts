@@ -44,7 +44,7 @@ export class LocationService {
         });
 
         const s3Data = await this.s3BucketService.uploadImage(locationImage, foundLocation.locationId, 'locationId', foundLocation.userTk.userId);
-        foundLocation.s3Imagekey = s3Data.key;
+        foundLocation.s3Imagekey = s3Data;
         //Return creted location and log response
         this.logger.color('blue').success("Location added by user: " + foundUser.email);
         return await this.locationRepository.save(foundLocation);
@@ -71,6 +71,9 @@ export class LocationService {
         const randomLocation = locationArray[Math.floor(Math.random() * locationArray.length)];
         delete randomLocation.userTk.password;
 
+        //Replace image keys with actuall link to the image
+        randomLocation.s3Imagekey = await this.s3BucketService.getImage(randomLocation.s3Imagekey);
+
         this.logger.color('blue').success("Random location returned");
         return randomLocation;
     }
@@ -89,6 +92,11 @@ export class LocationService {
         locations.forEach(element => {
             delete element.userTk.password
         });
+
+        //Replace image keys with actuall link to the image
+        for (const location of locations) {
+            location.s3Imagekey = await this.s3BucketService.getImage(location.s3Imagekey);
+        }
 
         this.logger.color('blue').success("All locations have been returned and sorted by newest");
         return locations;
@@ -115,6 +123,11 @@ export class LocationService {
         usersLocations.forEach(element => {
             delete element.userTk.password
         });
+
+        //Replace image keys with actuall link to the image
+        for (const location of usersLocations) {
+            location.s3Imagekey = await this.s3BucketService.getImage(location.s3Imagekey);
+        }
 
         this.logger.color('blue').success("All location for user: " + foundUser.email + " returned");
         return usersLocations;

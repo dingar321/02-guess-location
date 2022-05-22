@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Post, Put, Req, UnauthorizedException, UploadedFile, UseGuards, UseInterceptors } from "@nestjs/common";
+import { BadRequestException, Body, Controller, Get, Post, Put, Req, UnauthorizedException, UploadedFile, UseGuards, UseInterceptors } from "@nestjs/common";
 import { ApiBadRequestResponse, ApiConsumes, ApiOkResponse, ApiOperation, ApiTags, ApiUnauthorizedResponse } from "@nestjs/swagger";
 import { ChangePasswordDto } from "./dto/change-password.dto";
 import { Request, Response } from 'express';
@@ -59,5 +59,4 @@ export class UserController {
         return await this.userService.updateProfileImage(profileImage, request);
     }
     //#endregion
-
 }

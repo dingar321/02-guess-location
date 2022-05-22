@@ -19,25 +19,7 @@ async function bootstrap() {
   //Setup for "Swagger" testing
   const config = new DocumentBuilder()
     .setTitle('Geotagger')
-    .setDescription
-    (`
-    The second project in the "SkillUp Mentor" program. 
-    
-    ● Application description:
-        - The full-stack application allows users after signing up and/or signing in to uploade a picture and mark its exact location on the map where it was taken. Authenticated users 
-          can then try and guess where the image was taken by selecting a point on the map. As a result the app returns the close their chosen location was.
-    
-    ● Additional functionality:
-        - Get each locations guesses
-        - Get each users guesses and locations 
-        - If a user forgets their password they can request a password reset link.
-        - Authenticated users can change their password, information and profile picture
-
-    ● Technical information:
-        - JWT HttpOnly cookie for authorization
-        - Pictures get saves on a AWS S3 bucket
-
-    `)
+    .setDescription('Check the repository "ReadMe" for API description')
     .setVersion('WIP')
     .build();
   const document = SwaggerModule.createDocument(app, config);

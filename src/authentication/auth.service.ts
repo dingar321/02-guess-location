@@ -43,7 +43,11 @@ export class AuthService {
         //Getting the s3 key/data to store in the database
         const s3Data = await this.s3BucketService.uploadImage(profileImage, foundUser.userId, 'userId', foundUser.userId);
 
-        foundUser.s3Imagekey = s3Data.key;
+        console.log(s3Data);
+
+        foundUser.s3Imagekey = s3Data;
+
+        await this.userRepository.save(foundUser);
 
         //Remove password before returning user
         const { password, ...result } = foundUser;
@@ -87,9 +91,12 @@ export class AuthService {
         //Gett logged users information
         const data = await this.jwtService.verifyAsync(request.cookies['jwt']);
         const foundUser = await this.userRepository.findOne({ userId: data.id })
+        foundUser.s3Imagekey = await this.s3BucketService.getImage(foundUser.s3Imagekey);
 
         //Remove password before returning user
         const { password, ...result } = foundUser;
+
+
 
         this.logger.color('blue').success("User " + foundUser.email + " found")
         return result;

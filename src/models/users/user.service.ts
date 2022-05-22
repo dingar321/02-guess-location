@@ -82,7 +82,7 @@ export class UserService {
 
         //Uploade the new image to the AWS S3 bucket and replace the value in the database
         const s3Data = await this.s3BucketService.uploadImage(profileImage, foundUser.userId, 'userId', foundUser.userId);
-        foundUser.s3Imagekey = s3Data.key;
+        foundUser.s3Imagekey = s3Data;
 
         //Remove password before returning user
         const { password, ...result } = foundUser;

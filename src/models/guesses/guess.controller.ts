@@ -49,8 +49,16 @@ export class GuessController {
     @ApiQuery({ name: "locationId", type: String, description: "Specify which Location (Required)", required: true })
     @Get('guess/for-location')
     async guessesLocation(@Query() locationId: number, limit: number): Promise<Guess[]> {
-        return await this.guessService.fingAllForLocation(locationId, limit);
+        return await this.guessService.findAllForLocation(locationId, limit);
     }
     //#endregion
 
+    //#region ENDPOINT: guess/users-location-guess
+    @UseGuards(JwtAuthGuard)
+    @ApiOperation({ summary: 'Get the locations guesses that the logged user added' })
+    @Get('guess/users-location-guess/:locationId')
+    async getGuess(@Param('locationId') locationId: number, @Req() request) {
+        return await this.guessService.findUsersGuess(locationId, request);
+    }
+    //#endregion
 }

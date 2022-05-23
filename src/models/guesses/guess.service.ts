@@ -2,6 +2,7 @@ import { BadRequestException, Injectable } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import { InjectRepository } from "@nestjs/typeorm";
 import { AuthService } from "src/authentication/auth.service";
+import { S3BucketService } from "src/common/s3-bucket/s3-bucket.service";
 import { Repository } from "typeorm";
 import { Location } from "../locations/entities/location.entity";
 import { LocationService } from "../locations/location.service";
@@ -12,7 +13,7 @@ import { Guess } from "./entities/guess.entity";
 @Injectable()
 export class GuessService {
     logger: any;
-    constructor(@InjectRepository(Guess) private readonly guessRepository: Repository<Guess>, private locationService: LocationService, private jwtService: JwtService, private authService: AuthService) {
+    constructor(@InjectRepository(Guess) private readonly guessRepository: Repository<Guess>, private s3BucketService: S3BucketService, private locationService: LocationService, private jwtService: JwtService, private authService: AuthService) {
         this.logger = require('node-color-log');
     }
 
@@ -93,13 +94,18 @@ export class GuessService {
             delete element.userTk.password
         });
 
+        //Replace image keys with actuall link to the image
+        for (const guess of usersGuesses) {
+            guess.locationTk.s3Imagekey = await this.s3BucketService.getImage(guess.locationTk.s3Imagekey);
+        }
+
         this.logger.color('blue').success("All guesses of user: " + foundUser.userId + " returned");
         return usersGuesses;
     }
     //#endregion
 
     //#region Get all guesses for location (Sort: errorDistance best first)
-    async fingAllForLocation(locationId: number, limit: number): Promise<Guess[]> {
+    async findAllForLocation(locationId: number, limit: number): Promise<Guess[]> {
         const locationsGuesses = await this.guessRepository.find({
             relations: ['userTk', 'locationTk'],
             where: {
@@ -116,8 +122,43 @@ export class GuessService {
             delete element.userTk.password
         });
 
+        //Replace image keys with actuall link to the image
+        for (const guess of locationsGuesses) {
+            guess.locationTk.s3Imagekey = await this.s3BucketService.getImage(guess.locationTk.s3Imagekey);
+            guess.userTk.s3Imagekey = await this.s3BucketService.getImage(guess.userTk.s3Imagekey);
+        }
+
         this.logger.color('blue').success("All guesses of location: " + locationId + " returned");
         return locationsGuesses;
+    }
+    //#endregion
+
+
+    //#region Find the specific guess for location b logged user 
+    async findUsersGuess(locationId: number, request: any) {
+        //Now check if the user has already guessed on this location/post
+        //To do that first we need the location and the user
+        const data = await this.jwtService.verifyAsync(request.cookies['jwt']);
+        const foundUser = await this.authService.findOneUserId(data.id)
+
+        //const foundGuess = await this.findAllForLocation(locationId, null);
+
+        const foundGuess = await this.guessRepository.findOne({
+            where: {
+                locationTk: locationId,
+                userTk: foundUser.userId
+            },
+            relations: ['userTk', 'locationTk'],
+        })
+
+
+        //Replace image keys with actuall link to the image
+        foundGuess.locationTk.s3Imagekey = await this.s3BucketService.getImage(foundGuess.locationTk.s3Imagekey);
+        foundGuess.userTk.s3Imagekey = await this.s3BucketService.getImage(foundGuess.userTk.s3Imagekey);
+
+        delete foundGuess.userTk.password
+
+        return foundGuess;
     }
     //#endregion
 

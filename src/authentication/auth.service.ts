@@ -96,8 +96,6 @@ export class AuthService {
         //Remove password before returning user
         const { password, ...result } = foundUser;
 
-
-
         this.logger.color('blue').success("User " + foundUser.email + " found")
         return result;
     }

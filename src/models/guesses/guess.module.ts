@@ -7,6 +7,7 @@ import { GuessController } from "./guess.controller";
 import { GuessService } from "./guess.service";
 import { LocationModule } from 'src/models/locations/location.module'
 import { ConfigModule } from "@nestjs/config";
+import { S3BucketService } from "src/common/s3-bucket/s3-bucket.service";
 
 @Module({
     imports: [
@@ -21,6 +22,6 @@ import { ConfigModule } from "@nestjs/config";
         LocationModule, AuthModule
     ],
     controllers: [GuessController],
-    providers: [GuessService],
+    providers: [GuessService, S3BucketService],
 })
 export class GuessModule { }

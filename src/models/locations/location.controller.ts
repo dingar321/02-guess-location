@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Query, Req, UploadedFile, UseGuards, UseInterceptors } from "@nestjs/common";
+import { Body, Controller, Get, Param, Post, Query, Req, UploadedFile, UseGuards, UseInterceptors } from "@nestjs/common";
 import { ApiBadRequestResponse, ApiConsumes, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiQuery, ApiTags, ApiUnauthorizedResponse } from "@nestjs/swagger";
 import { LocationAddDecorator } from "src/common/decorators/location-add.decorator";
 import { LocationAddDto } from "./dto/location-add.dto";
@@ -57,5 +57,12 @@ export class LocationController {
         return this.locationService.findAllUsersLocations(limit, request);
     }
     //#endregion
+
+    @UseGuards(JwtAuthGuard)
+    @ApiOperation({ summary: 'Get a specific location (Protected)' })
+    @Get('location/:locationId')
+    async specificLocation(@Param('locationId') locationId: number) {
+        return this.locationService.findLocation(locationId);
+    }
 
 }

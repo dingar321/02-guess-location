@@ -134,4 +134,26 @@ export class LocationService {
     }
     //#endregion
 
+    //#region Get specific location
+    async findLocation(locationId: number) {
+        const foundLocation = await this.locationRepository.findOne({
+            where: {
+                locationId: locationId
+            },
+            relations: ['userTk']
+        });
+
+        delete foundLocation.userTk.password;
+
+        //Replace image keys with actuall link to the image
+
+
+        foundLocation.s3Imagekey = await this.s3BucketService.getImage(foundLocation.s3Imagekey);
+
+        foundLocation.userTk.s3Imagekey = await this.s3BucketService.getImage(foundLocation.userTk.s3Imagekey);
+
+        return foundLocation;
+    }
+    //#endregion
+
 }
